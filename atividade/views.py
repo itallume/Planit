@@ -1,8 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
-
+from django.views.generic import ListView
 # Create your views here.
+
+class AtividadeListView(ListView):
+    model = Atividade
+    template_name = 'atividade/lista.html'
+    context_object_name = 'atividades'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        print(context)
+        return context
 
 class AtividadeView:
     def lista_atividades(request):
