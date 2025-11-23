@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividades</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        .btn-edit {
+            background-color: #28a745;
+        }
+        .btn-edit:hover {
+            background-color: #218838;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f2f2f2;
+        }
+        .vazio {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .status-pendente {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-concluido {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .paga {
+            color: #28a745;
+        }
+        .nao-paga {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Atividades</h1>
+        <a href="{% url 'criar_atividade' %}" class="btn">+ Nova Atividade</a>
+        
+        {% if atividades %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Data Prevista</th>
+                        <th>Paga</th>
+                        <th>Ambiente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atividade in atividades %}
+                        <tr>
+                            <td>{{ atividade.descricao|truncatewords:10 }}</td>
+                            <td>R$ {{ atividade.valor|floatformat:2 }}</td>
+                            <td>
+                                <span class="status {% if atividade.status == 'Concluído' %}status-concluido{% else %}status-pendente{% endif %}">
+                                    {{ atividade.status }}
+                                </span>
+                            </td>
+                            <td>{{ atividade.data_prevista|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="{% if atividade.is_paga %}paga{% else %}nao-paga{% endif %}">
+                                    {% if atividade.is_paga %}✓ Paga{% else %}✗ Não Paga{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ atividade.ambiente.nome }}</td>
+                            <td>
+                                <a href="{% url 'detalhe_atividade' atividade.id %}" class="btn btn-small">Ver</a>
+                                <a href="{% url 'editar_atividade' atividade.id %}" class="btn btn-small btn-edit">Editar</a>
+                                <a href="{% url 'deletar_atividade' atividade.id %}" class="btn btn-small btn-delete">Excluir</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="vazio">
+                <p>Nenhuma atividade criada. Clique em "Nova Atividade" para começar.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

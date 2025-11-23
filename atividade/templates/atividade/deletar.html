@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluir Atividade</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .confirmacao {
+            background-color: #fff3cd;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ffc107;
+        }
+        .info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .info .label {
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            color: white;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+        .btn-cancelar {
+            background-color: #6c757d;
+        }
+        .btn-cancelar:hover {
+            background-color: #5a6268;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Excluir Atividade</h1>
+        <div class="confirmacao">
+            <p>⚠️ <strong>Tem certeza que deseja excluir esta atividade?</strong></p>
+            <p>Esta ação não pode ser desfeita.</p>
+        </div>
+        
+        <div class="info">
+            <div class="label">Descrição:</div>
+            <div>{{ atividade.descricao|truncatewords:20 }}</div>
+        </div>
+        
+        <div class="info">
+            <div class="label">Valor:</div>
+            <div>R$ {{ atividade.valor|floatformat:2 }}</div>
+        </div>
+        
+        <div class="info">
+            <div class="label">Data Prevista:</div>
+            <div>{{ atividade.data_prevista|date:"d/m/Y" }}</div>
+        </div>
+        
+        <div class="actions">
+            <form method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">Confirmar Exclusão</button>
+            </form>
+            <a href="{% url 'lista_atividades' %}"><button type="button" class="btn-cancelar">Cancelar</button></a>
+        </div>
+    </div>
+</body>
+</html>

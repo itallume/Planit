@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if atividade %}Editar{% else %}Criar{% endif %} Atividade</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        form {
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+        .formset {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .formset-form {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .formset-form .form-row {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .formset-form .delete-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        .management-form {
+            display: none;
+        }
+        .add-form-btn {
+            background-color: #17a2b8;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .add-form-btn:hover {
+            background-color: #138496;
+        }
+        .buttons {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .btn-voltar {
+            background-color: #6c757d;
+        }
+        .btn-voltar:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{% if atividade %}Editar Atividade{% else %}Criar Nova Atividade{% endif %}</h1>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Seção de Atividade -->
+            <div class="section">
+                <h2>📋 Informações da Atividade</h2>
+                <div class="form-group">
+                    {{ atividade_form.descricao.label_tag }}
+                    {{ atividade_form.descricao }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ atividade_form.valor.label_tag }}
+                        {{ atividade_form.valor }}
+                    </div>
+                    <div class="form-group">
+                        {{ atividade_form.valor_recebido.label_tag }}
+                        {{ atividade_form.valor_recebido }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ atividade_form.data_prevista.label_tag }}
+                        {{ atividade_form.data_prevista }}
+                    </div>
+                    <div class="form-group">
+                        {{ atividade_form.status.label_tag }}
+                        {{ atividade_form.status }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ atividade_form.ambiente.label_tag }}
+                        {{ atividade_form.ambiente }}
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            {{ atividade_form.is_paga }}
+                            {{ atividade_form.is_paga.label_tag }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção de Cliente -->
+            <div class="section">
+                <h2>👤 Informações do Cliente</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ cliente_form.nome.label_tag }}
+                        {{ cliente_form.nome }}
+                    </div>
+                    <div class="form-group">
+                        {{ cliente_form.email.label_tag }}
+                        {{ cliente_form.email }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ cliente_form.telefone.label_tag }}
+                        {{ cliente_form.telefone }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ cliente_form.sobre.label_tag }}
+                    {{ cliente_form.sobre }}
+                </div>
+            </div>
+            
+            <!-- Seção de Endereço -->
+            <div class="section">
+                <h2>📍 Endereços do Cliente</h2>
+                {{ endereco_formset.management_form }}
+                <div class="formset">
+                    {% for form in endereco_formset %}
+                        <div class="formset-form">
+                            {{ form.non_field_errors }}
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ form.rua.label_tag }}
+                                    {{ form.rua }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.cidade.label_tag }}
+                                    {{ form.cidade }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.estado.label_tag }}
+                                    {{ form.estado }}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ form.cep.label_tag }}
+                                    {{ form.cep }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.complemento.label_tag }}
+                                    {{ form.complemento }}
+                                </div>
+                                {% if form.DELETE %}
+                                    <div class="form-group delete-row">
+                                        <label>
+                                            {{ form.DELETE }}
+                                            Remover
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Seção de Referências -->
+            <div class="section">
+                <h2>📎 Referências Visuais</h2>
+                {{ referencia_formset.management_form }}
+                <div class="formset">
+                    {% for form in referencia_formset %}
+                        <div class="formset-form">
+                            {{ form.non_field_errors }}
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ form.tipo.label_tag }}
+                                    {{ form.tipo }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.nome_arquivo.label_tag }}
+                                    {{ form.nome_arquivo }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.arquivo.label_tag }}
+                                    {{ form.arquivo }}
+                                </div>
+                            </div>
+                            {% if form.DELETE %}
+                                <div class="form-group delete-row">
+                                    <label>
+                                        {{ form.DELETE }}
+                                        Remover
+                                    </label>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Botões de ação -->
+            <div class="section buttons">
+                <button type="submit">Salvar</button>
+                <a href="{% url 'lista_atividades' %}"><button type="button" class="btn-voltar">Voltar</button></a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
