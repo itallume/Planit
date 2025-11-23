@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Atividades{% endblock %}
+{% block content %}
+<div style="max-width:800px; margin:0 auto;">
+    <h1 style="font-size:1.5rem; margin-bottom:1rem; color:#4f8cff;">Atividades</h1>
+    <a href="{% url 'lista_ambientes' %}" style="padding:10px 20px; background:#4f8cff; color:#fff; text-decoration:none; border-radius:5px; display:inline-block; margin-bottom:20px;">+ Nova Atividade</a>
+    {% if atividades %}
+        <table style="width:100%; border-collapse:collapse; margin-top:20px; background:#23262f; color:#eee; border-radius:8px; overflow:hidden;">
+            <thead>
+                <tr>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Título</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Data Prevista</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Valor</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Status</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for atividade in atividades %}
+                <tr style="background:#23262f;">
+                    <td style="padding:12px; border:1px solid #333;">{{ atividade.titulo }}</td>
+                    <td style="padding:12px; border:1px solid #333;">{{ atividade.data_prevista }}</td>
+                    <td style="padding:12px; border:1px solid #333;">{{ atividade.valor }}</td>
+                    <td style="padding:12px; border:1px solid #333;">{{ atividade.status }}</td>
+                    <td style="padding:12px; border:1px solid #333;">
+                        <a href="{% url 'editar_ambiente' ambiente.id %}" style="color:#2ecc71;">Editar</a>
+                        {# <a href="{% url 'editar_atividade' atividade.id %}" style="color:#4f8cff;">Editar</a> #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align:center; padding:40px; color:#bbb;">Nenhuma atividade criada. Clique em "Nova Atividade" para começar.</div>
+    {% endif %}
+</div>
+{% endblock %}

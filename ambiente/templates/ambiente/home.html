@@ -1,82 +1,33 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ambientes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        table th {
-            background-color: #f2f2f2;
-        }
-        .vazio {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Ambientes</h1>
-        <a href="{% url 'criar_ambiente' %}" class="btn">+ Novo Ambiente</a>
-        
-        {% if ambientes %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Tema</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ambiente in ambientes %}
-                        <tr>
-                            <td>{{ ambiente.nome }}</td>
-                            <td>{{ ambiente.tema }}</td>
-                            <td>
-                                <a href="{% url 'detalhe_ambiente' ambiente.id %}">Ver</a> |
-                                <a href="{% url 'editar_ambiente' ambiente.id %}">Editar</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="vazio">
-                <p>Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</p>
-            </div>
-        {% endif %}
-    </div>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Ambientes{% endblock %}
+{% block content %}
+<div style="max-width:800px; margin:0 auto;">
+    <h1 style="font-size:1.5rem; margin-bottom:1rem; color:#4f8cff;">Ambientes</h1>
+    <a href="{% url 'criar_ambiente' %}" style="padding:10px 20px; background:#2ecc71; color:#fff; text-decoration:none; border-radius:5px; display:inline-block; margin-bottom:20px;">+ Novo Ambiente</a>
+    {% if ambientes %}
+        <table style="width:100%; border-collapse:collapse; margin-top:20px; background:#23262f; color:#eee; border-radius:8px; overflow:hidden;">
+            <thead>
+                <tr>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Nome</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Tema</th>
+                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ambiente in ambientes %}
+                <tr style="background:#23262f;">
+                    <td style="padding:12px; border:1px solid #333;">{{ ambiente.nome }}</td>
+                    <td style="padding:12px; border:1px solid #333;">{{ ambiente.tema }}</td>
+                    <td style="padding:12px; border:1px solid #333;">
+                        <a href="{% url 'detalhe_ambiente' ambiente.id %}" style="color:#4f8cff;">Ver</a> |
+                        <a href="{% url 'editar_ambiente' ambiente.id %}" style="color:#2ecc71;">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align:center; padding:40px; color:#bbb;">Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
+    {% endif %}
+</div>
+{% endblock %}
