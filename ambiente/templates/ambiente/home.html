@@ -1,33 +1,132 @@
 {% extends 'global/base.html' %}
-{% block title %}Ambientes{% endblock %}
+{% block titulo %}Ambientes{% endblock %}
 {% block content %}
-<div style="max-width:800px; margin:0 auto;">
-    <h1 style="font-size:1.5rem; margin-bottom:1rem; color:#4f8cff;">Ambientes</h1>
-    <a href="{% url 'criar_ambiente' %}" style="padding:10px 20px; background:#2ecc71; color:#fff; text-decoration:none; border-radius:5px; display:inline-block; margin-bottom:20px;">+ Novo Ambiente</a>
+<style>
+    .container-ambientes {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px 0 0 0;
+    }
+    .btn-novo {
+        padding: 10px 22px;
+        background-color: #4f8cff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        display: inline-block;
+        margin-bottom: 24px;
+        font-weight: 600;
+        font-size: 1.08em;
+        border: none;
+        transition: background .2s;
+    }
+    .btn-novo:hover {
+        background-color: #2ecc71;
+        color: #fff;
+    }
+    table.ambientes {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #23262f;
+        color: #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    table.ambientes th, table.ambientes td {
+        border: 1px solid #333;
+        padding: 14px;
+        text-align: left;
+    }
+    table.ambientes th {
+        background-color: #181a20;
+        color: #4f8cff;
+        font-size: 1.05em;
+        font-weight: 600;
+    }
+    .vazio {
+        text-align: center;
+        padding: 40px;
+        color: #bbb;
+        font-size: 1.1em;
+    }
+    .badge-tema {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        background: #292c35;
+        color: #ffc107;
+        font-size: 0.98em;
+        font-weight: 500;
+        border: 1px solid #ffc10744;
+    }
+    .actions {
+        display: flex;
+        gap: 12px;
+    }
+    .btn-ver {
+        background: #4f8cff;
+        color: #fff;
+        border-radius: 4px;
+        padding: 6px 16px;
+        text-decoration: none;
+        font-size: 0.98em;
+        font-weight: 500;
+        border: none;
+        transition: background .2s;
+    }
+    .btn-ver:hover {
+        background: #23262f;
+        color: #fff;
+    }
+    .btn-editar {
+        background: #2ecc71;
+        color: #fff;
+        border-radius: 4px;
+        padding: 6px 16px;
+        text-decoration: none;
+        font-size: 0.98em;
+        font-weight: 500;
+        border: none;
+        transition: background .2s;
+    }
+    .btn-editar:hover {
+        background: #218838;
+        color: #fff;
+    }
+</style>
+<div class="container-ambientes">
+    <h1 style="font-size:1.7rem; margin-bottom:1.2rem; color:#4f8cff; font-weight:700;">Ambientes</h1>
+    <a href="{% url 'criar_ambiente' %}" class="btn-novo">+ Novo Ambiente</a>
     {% if ambientes %}
-        <table style="width:100%; border-collapse:collapse; margin-top:20px; background:#23262f; color:#eee; border-radius:8px; overflow:hidden;">
+        <table class="ambientes">
             <thead>
                 <tr>
-                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Nome</th>
-                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Tema</th>
-                    <th style="background:#181a20; padding:12px; border:1px solid #333; color:#4f8cff;">Ações</th>
+                    <th>Nome</th>
+                    <th>Tema</th>
+                    <th>Atividades</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ambiente in ambientes %}
-                <tr style="background:#23262f;">
-                    <td style="padding:12px; border:1px solid #333;">{{ ambiente.nome }}</td>
-                    <td style="padding:12px; border:1px solid #333;">{{ ambiente.tema }}</td>
-                    <td style="padding:12px; border:1px solid #333;">
-                        <a href="{% url 'detalhe_ambiente' ambiente.id %}" style="color:#4f8cff;">Ver</a> |
-                        <a href="{% url 'editar_ambiente' ambiente.id %}" style="color:#2ecc71;">Editar</a>
+                <tr>
+                    <td>{{ ambiente.nome }}</td>
+                    <td><span class="badge-tema">{{ ambiente.tema }}</span></td>
+                    <td style="text-align:center; font-weight:600; color:#ffc107;">{{ ambiente.num_atividades }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'detalhe_ambiente' ambiente.id %}" class="btn-ver">Ver</a>
+                            <a href="{% url 'editar_ambiente' ambiente.id %}" class="btn-editar">Editar</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <div style="text-align:center; padding:40px; color:#bbb;">Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
+        <div class="vazio">Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
     {% endif %}
 </div>
 {% endblock %}

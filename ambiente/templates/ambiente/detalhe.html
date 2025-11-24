@@ -3,7 +3,7 @@
 {% block content %}
 <div style="max-width:800px; margin:0 auto;">
     <h1 style="font-size:1.5rem; margin-bottom:1rem; color:#4f8cff;">Atividades</h1>
-    <a href="{% url 'lista_ambientes' %}" style="padding:10px 20px; background:#4f8cff; color:#fff; text-decoration:none; border-radius:5px; display:inline-block; margin-bottom:20px;">+ Nova Atividade</a>
+    <a href="{% url 'criar_atividade' %}" style="padding:10px 20px; background:#4f8cff; color:#fff; text-decoration:none; border-radius:5px; display:inline-block; margin-bottom:20px;">+ Nova Atividade</a>
     {% if atividades %}
         <table style="width:100%; border-collapse:collapse; margin-top:20px; background:#23262f; color:#eee; border-radius:8px; overflow:hidden;">
             <thead>

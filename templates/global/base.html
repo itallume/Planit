@@ -6,14 +6,21 @@
     <title>{%block titulo%}Base global{%endblock%}</title>
 </head>
 
-
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #181a20;
+        color: #eee;
+    }
+</style>
 
 <header style="display:grid; grid-template-columns: 180px 1fr 60px; align-items:center; background-color:#181a20; padding:10px 20px; box-shadow:0 2px 5px rgba(0,0,0,0.25);">
     <div style="font-weight:700; font-size:1.3rem; color:#4f8cff; letter-spacing:1px; display:flex; align-items:center; justify-content:flex-start;">
-        Planit
+        <a href="{% url 'lista_ambientes'%}" style="color:#4f8cff; text-decoration:none;">Planit</a>
     </div>
     <div style="justify-self:center;">
-        <form action="/search" method="get" style="display: inline-flex; align-items: center; margin: 0;">
+        <form action="{% url 'lista_ambientes'%}" method="get" style="display: inline-flex; align-items: center; margin: 0;">
             <input type="text" name="q" placeholder="Pesquisar..." style="padding: 5px; width: 300px; border: 1px solid #333; border-radius: 4px; background:#23262f; color:#eee;">
             <button type="submit" style="padding: 5px 10px; margin-left: 5px; background-color: #4f8cff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
                 Buscar
@@ -87,8 +94,8 @@
     {% block content %}{% endblock %}
     <footer style="margin-top:auto; background:#23262f; border-top:1px solid #222;">
         {% block footer %}
-        <div style="padding: 10px; text-align: center;">
-            <p style="margin: 0; color: #bbb;">&copy; 2023 Planit. Todos os direitos reservados.</p>
+        <div style="padding: 10px; text-align: center; font-size: 0.9rem;">
+            <p style="margin: 0; color: #bbb;">&copy; 2025 Planit. Todos os direitos reservados.</p>
             <p style="margin: 5px 0;">
                 <a href="/sobre" style="color: #4f8cff; text-decoration: none; margin-right: 10px;">Sobre</a>
                 <a href="/contato" style="color: #4f8cff; text-decoration: none; margin-right: 10px;">Contato</a>
