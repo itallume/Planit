@@ -2,10 +2,8 @@ services:
   db:
     image: postgres:15
     container_name: planit_db
-    environment:
-      POSTGRES_DB: planit_db
-      POSTGRES_USER: planit_user
-      POSTGRES_PASSWORD: planit_password
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -14,19 +12,13 @@ services:
   web:
     build: .
     container_name: planit_web
-    command: python manage.py runserver 0.0.0.0:8080
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
     volumes:
       - .:/app
     ports:
       - "8080:8080"
-    environment:
-      - DEBUG=True
-      - DATABASE_ENGINE=postgresql
-      - DATABASE_NAME=planit_db
-      - DATABASE_USERNAME=planit_user
-      - DATABASE_PASSWORD=planit_password
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_started

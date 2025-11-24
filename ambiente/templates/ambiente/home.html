@@ -239,6 +239,31 @@
     </div>
 </div>
 
+<!-- Modal Editar Ambiente -->
+<div id="modalEditarAmbiente" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-header">Editar Ambiente</h3>
+        <form method="POST" id="formEditarAmbiente">
+            {% csrf_token %}
+            <input type="hidden" id="editar_ambiente_id" name="ambiente_id">
+            <div class="form-group">
+                <label for="editar_nome">Nome:</label>
+                <input type="text" name="nome" id="editar_nome" required>
+                <div id="editar_error_nome" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="editar_tema">Tema:</label>
+                <input type="text" name="tema" id="editar_tema" required>
+                <div id="editar_error_tema" class="error-message"></div>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-modal btn-salvar">Salvar</button>
+                <button type="button" onclick="fecharModalEditar()" class="btn-modal btn-cancelar">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function abrirModalAmbiente() {
         document.getElementById('modalAmbiente').style.display = 'flex';
@@ -252,6 +277,22 @@
         document.getElementById('error_tema').textContent = '';
     }
     
+    function abrirModalEditar(id, nome, tema) {
+        document.getElementById('editar_ambiente_id').value = id;
+        document.getElementById('editar_nome').value = nome;
+        document.getElementById('editar_tema').value = tema;
+        document.getElementById('formEditarAmbiente').action = "{% url 'lista_ambientes' %}".replace('ambiente/', 'ambiente/' + id + '/editar/');
+        document.getElementById('modalEditarAmbiente').style.display = 'flex';
+        document.getElementById('editar_nome').focus();
+    }
+    
+    function fecharModalEditar() {
+        document.getElementById('modalEditarAmbiente').style.display = 'none';
+        document.getElementById('formEditarAmbiente').reset();
+        document.getElementById('editar_error_nome').textContent = '';
+        document.getElementById('editar_error_tema').textContent = '';
+    }
+    
     // Fecha modal ao clicar fora
     document.getElementById('modalAmbiente').addEventListener('click', function(e) {
         if (e.target === this) {
@@ -259,25 +300,40 @@
         }
     });
     
-    // Se houver erros de validação, reabrir o modal
-    var temErros = "{{ form.errors|yesno:'true,false' }}" === "true";
-    var erroNome = "{% if form.nome.errors %}{{ form.nome.errors|join:', ' }}{% endif %}";
-    var erroTema = "{% if form.tema.errors %}{{ form.tema.errors|join:', ' }}{% endif %}";
-
-    window.addEventListener('DOMContentLoaded', function() {
-        if (temErros) {
-            abrirModalAmbiente();
-            document.getElementById('error_nome').textContent = erroNome;
-            document.getElementById('error_tema').textContent = erroTema;
+    document.getElementById('modalEditarAmbiente').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fecharModalEditar();
         }
     });
     
-    // Abre o modal se vier da URL com parâmetro open_modal
+    // Se houver erros de validação no criar
+    {% if form.errors and not form_editar %}
     window.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('open_modal') === 'true') {
-            abrirModalAmbiente();
-        }
+        abrirModalAmbiente();
+        {% if form.nome.errors %}
+        document.getElementById('error_nome').textContent = "{{ form.nome.errors|join:', '|escapejs }}";
+        {% endif %}
+        {% if form.tema.errors %}
+        document.getElementById('error_tema').textContent = "{{ form.tema.errors|join:', '|escapejs }}";
+        {% endif %}
     });
+    {% endif %}
+    
+    // Se houver erros de validação no editar
+    {% if form_editar.errors and ambiente_editar_id %}
+    window.addEventListener('DOMContentLoaded', function() {
+        abrirModalEditar(
+            {{ ambiente_editar_id }},
+            "{{ form_editar.nome.value|default:''|escapejs }}",
+            "{{ form_editar.tema.value|default:''|escapejs }}"
+        );
+        {% if form_editar.nome.errors %}
+        document.getElementById('editar_error_nome').textContent = "{{ form_editar.nome.errors|join:', '|escapejs }}";
+        {% endif %}
+        {% if form_editar.tema.errors %}
+        document.getElementById('editar_error_tema').textContent = "{{ form_editar.tema.errors|join:', '|escapejs }}";
+        {% endif %}
+    });
+    {% endif %}
 </script>
 {% endblock %}
