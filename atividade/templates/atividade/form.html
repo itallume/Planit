@@ -542,6 +542,7 @@
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" id="cliente-id-hidden" name="cliente" value="">
         {{ atividade_form.cliente }}
 
         <!-- TAB 1: Atividade -->
@@ -650,7 +651,7 @@
                 </div>
             </div>
 
-            <div id="novo-cliente-form" class="conditional-section">
+            <div id="novo-cliente-form" class="conditional-section" style="display: none;">
                 <h3 style="margin-top: 0; margin-bottom: 20px; color: #4f8cff;">📝 Dados do Novo Cliente</h3>
                 <div class="form-row">
                     <div class="form-group">
@@ -885,6 +886,7 @@
     function selecionarCliente(id, nome, email) {
         clienteSelecionadoId = id;
         clienteField.value = id;
+        document.getElementById('cliente-id-hidden').value = id;
         clienteNome.textContent = nome;
         clienteEmail.textContent = email;
         clienteSelecionado.style.display = 'block';
@@ -899,20 +901,39 @@
         e.preventDefault();
         clienteSelecionadoId = null;
         clienteField.value = '';
+        document.getElementById('cliente-id-hidden').value = '';
         clienteSelecionado.style.display = 'none';
         searchInput.value = '';
     });
 
     // Checkbox para criar novo cliente
     criarNovoCheckbox.addEventListener('change', (e) => {
+        const campos = novoClienteForm.querySelectorAll('input, select, textarea');
+        
         if (e.target.checked) {
             novoClienteForm.classList.add('visible');
+            novoClienteForm.style.display = 'block';
             clienteSelecionado.style.display = 'none';
             clienteField.value = '';
             searchInput.value = '';
+            // Habilitar campos
+            campos.forEach(campo => {
+                campo.disabled = false;
+            });
         } else {
             novoClienteForm.classList.remove('visible');
+            novoClienteForm.style.display = 'none';
+            // Desabilitar campos para não serem validados
+            campos.forEach(campo => {
+                campo.disabled = true;
+            });
         }
+    });
+    
+    // Desabilitar campos inicialmente
+    const camposIniciais = novoClienteForm.querySelectorAll('input, select, textarea');
+    camposIniciais.forEach(campo => {
+        campo.disabled = true;
     });
 
     // Fechar dropdown ao clicar fora
