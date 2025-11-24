@@ -5,7 +5,7 @@
     .container-ambientes {
         max-width: 1000px;
         margin: 0 auto;
-        padding: 30px 0 0 0;
+        padding: 30px 0 60px 0; /* Adiciona espaço inferior para afastar do footer */
     }
     .btn-novo {
         padding: 10px 22px;
@@ -18,6 +18,7 @@
         font-weight: 600;
         font-size: 1.08em;
         border: none;
+        cursor: pointer;
         transition: background .2s;
     }
     .btn-novo:hover {
@@ -95,10 +96,94 @@
         background: #218838;
         color: #fff;
     }
+    
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(24, 26, 32, 0.85);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        background: #23262f;
+        padding: 24px 32px;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        min-width: 400px;
+        max-width: 90vw;
+        color: #eee;
+    }
+    .modal-header {
+        margin-top: 0;
+        margin-bottom: 18px;
+        color: #4f8cff;
+        font-size: 1.4rem;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #eee;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        background: #181a20;
+        color: #eee;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    }
+    .modal-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .btn-modal {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .btn-salvar {
+        background: #2ecc71;
+        color: #fff;
+    }
+    .btn-salvar:hover {
+        background: #218838;
+    }
+    .btn-cancelar {
+        background: #4f8cff;
+        color: #fff;
+    }
+    .btn-cancelar:hover {
+        background: #23262f;
+    }
+    .error-message {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
 </style>
+
 <div class="container-ambientes">
     <h1 style="font-size:1.7rem; margin-bottom:1.2rem; color:#4f8cff; font-weight:700;">Ambientes</h1>
-    <a href="{% url 'criar_ambiente' %}" class="btn-novo">+ Novo Ambiente</a>
+    <button onclick="abrirModalAmbiente()" class="btn-novo">+ Novo Ambiente</button>
+    
     {% if ambientes %}
         <table class="ambientes">
             <thead>
@@ -129,4 +214,70 @@
         <div class="vazio">Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
     {% endif %}
 </div>
+
+<!-- Modal Criar Ambiente -->
+<div id="modalAmbiente" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-header">Criar Novo Ambiente</h3>
+        <form method="POST" action="{% url 'criar_ambiente' %}" id="formAmbiente">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_nome">Nome:</label>
+                <input type="text" name="nome" id="id_nome" required>
+                <div id="error_nome" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="id_tema">Tema:</label>
+                <input type="text" name="tema" id="id_tema" required>
+                <div id="error_tema" class="error-message"></div>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-modal btn-salvar">Salvar</button>
+                <button type="button" onclick="fecharModalAmbiente()" class="btn-modal btn-cancelar">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalAmbiente() {
+        document.getElementById('modalAmbiente').style.display = 'flex';
+        document.getElementById('id_nome').focus();
+    }
+    
+    function fecharModalAmbiente() {
+        document.getElementById('modalAmbiente').style.display = 'none';
+        document.getElementById('formAmbiente').reset();
+        document.getElementById('error_nome').textContent = '';
+        document.getElementById('error_tema').textContent = '';
+    }
+    
+    // Fecha modal ao clicar fora
+    document.getElementById('modalAmbiente').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fecharModalAmbiente();
+        }
+    });
+    
+    // Se houver erros de validação, reabrir o modal
+    var temErros = "{{ form.errors|yesno:'true,false' }}" === "true";
+    var erroNome = "{% if form.nome.errors %}{{ form.nome.errors|join:', ' }}{% endif %}";
+    var erroTema = "{% if form.tema.errors %}{{ form.tema.errors|join:', ' }}{% endif %}";
+
+    window.addEventListener('DOMContentLoaded', function() {
+        if (temErros) {
+            abrirModalAmbiente();
+            document.getElementById('error_nome').textContent = erroNome;
+            document.getElementById('error_tema').textContent = erroTema;
+        }
+    });
+    
+    // Abre o modal se vier da URL com parâmetro open_modal
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open_modal') === 'true') {
+            abrirModalAmbiente();
+        }
+    });
+</script>
 {% endblock %}
