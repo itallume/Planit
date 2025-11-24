@@ -12,6 +12,7 @@ class AtividadeForm(forms.ModelForm):
             'data_prevista': forms.DateInput(attrs={'type': 'date'}),
             'hora_prevista': forms.TimeInput(attrs={'type': 'time'}),
             'descricao': forms.Textarea(attrs={'rows': 4}),
+            'cliente': forms.HiddenInput(),
         }
 
 
