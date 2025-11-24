@@ -9,7 +9,7 @@
     }
     .btn-novo {
         padding: 10px 22px;
-        background-color: #4f8cff;
+        background-color: #2ecc71;
         color: #fff;
         text-decoration: none;
         border-radius: 5px;
@@ -22,79 +22,180 @@
         transition: background .2s;
     }
     .btn-novo:hover {
-        background-color: #2ecc71;
+        background-color: #27ae60;
         color: #fff;
     }
-    table.ambientes {
-        width: 100%;
-        border-collapse: collapse;
+    
+    /* Cards Grid */
+    .ambientes-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
         margin-top: 20px;
+    }
+    
+    @media (max-width: 1024px) {
+        .ambientes-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .ambientes-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .ambiente-card {
         background: #23262f;
-        color: #eee;
         border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    table.ambientes th, table.ambientes td {
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         border: 1px solid #333;
-        padding: 14px;
-        text-align: left;
+        transition: all .2s ease;
+        position: relative;
+        overflow: hidden;
     }
-    table.ambientes th {
-        background-color: #181a20;
-        color: #4f8cff;
-        font-size: 1.05em;
-        font-weight: 600;
+    
+    .ambiente-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 0;
+        background: transparent;
     }
-    .vazio {
-        text-align: center;
-        padding: 40px;
-        color: #bbb;
-        font-size: 1.1em;
+    
+    .ambiente-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        border-color: #444;
     }
+    
+    .card-header {
+        margin-bottom: 12px;
+    }
+    
+    .card-titulo {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #eee;
+        margin: 0 0 6px 0;
+    }
+    
     .badge-tema {
         display: inline-block;
-        padding: 4px 12px;
-        border-radius: 12px;
-        background: #292c35;
-        color: #ffc107;
-        font-size: 0.98em;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: #2a2d35;
+        color: #aaa;
+        font-size: 0.75rem;
         font-weight: 500;
-        border: 1px solid #ffc10744;
+        border: 1px solid #3a3d45;
     }
-    .actions {
+    
+    .card-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 12px 0;
+    }
+    
+    .stat-item {
+        background: #1a1d24;
+        padding: 10px 8px;
+        border-radius: 6px;
+        text-align: center;
+        border: 1px solid #2a2d35;
+        transition: all .2s;
+    }
+    
+    .stat-item:hover {
+        background: #1f2229;
+    }
+    
+    .stat-emoji {
+        font-size: 1.3rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .stat-numero {
+        font-size: 1.4rem;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+    }
+    
+    .stat-item.pendente .stat-numero {
+        color: #d4af37;
+    }
+    
+    .stat-item.concluido .stat-numero {
+        color: #5cb85c;
+    }
+    
+    .stat-item.atrasado .stat-numero {
+        color: #d9534f;
+    }
+    
+    .stat-label {
+        font-size: 0.65rem;
+        color: #bbb;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .card-actions {
         display: flex;
-        gap: 12px;
+        gap: 8px;
+        margin-top: 12px;
     }
+    
+    .btn-card {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        transition: all .2s;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+    }
+    
     .btn-ver {
         background: #4f8cff;
         color: #fff;
-        border-radius: 4px;
-        padding: 6px 16px;
-        text-decoration: none;
-        font-size: 0.98em;
-        font-weight: 500;
-        border: none;
-        transition: background .2s;
     }
+    
     .btn-ver:hover {
-        background: #23262f;
-        color: #fff;
+        background: #3a7de8;
+        transform: translateY(-1px);
     }
+    
     .btn-editar {
         background: #2ecc71;
         color: #fff;
-        border-radius: 4px;
-        padding: 6px 16px;
-        text-decoration: none;
-        font-size: 0.98em;
-        font-weight: 500;
-        border: none;
-        transition: background .2s;
     }
+    
     .btn-editar:hover {
-        background: #218838;
-        color: #fff;
+        background: #27ae60;
+        transform: translateY(-1px);
+    }
+    
+    .vazio {
+        text-align: center;
+        padding: 60px 40px;
+        color: #bbb;
+        font-size: 1.2em;
+        background: #23262f;
+        border-radius: 16px;
+        border: 2px dashed #333;
     }
     
     /* Modal */
@@ -185,33 +286,41 @@
     <button onclick="abrirModalAmbiente()" class="btn-novo">+ Novo Ambiente</button>
     
     {% if ambientes %}
-        <table class="ambientes">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Tema</th>
-                    <th>Atividades</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ambiente in ambientes %}
-                <tr>
-                    <td>{{ ambiente.nome }}</td>
-                    <td><span class="badge-tema">{{ ambiente.tema }}</span></td>
-                    <td style="text-align:center; font-weight:600; color:#ffc107;">{{ ambiente.num_atividades }}</td>
-                    <td>
-                        <div class="actions">
-                            <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-ver">Ver Atividades</a>
-                            <a href="{% url 'editar_ambiente' ambiente.id %}" class="btn-editar">Editar</a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="ambientes-grid">
+            {% for ambiente in ambientes %}
+            <div class="ambiente-card">
+                <div class="card-header">
+                    <h2 class="card-titulo">🏢 {{ ambiente.nome }}</h2>
+                    <span class="badge-tema">{{ ambiente.tema }}</span>
+                </div>
+                
+                <div class="card-stats">
+                    <div class="stat-item pendente">
+                        <span class="stat-emoji">⏰</span>
+                        <span class="stat-numero">{{ ambiente.num_pendentes }}</span>
+                        <span class="stat-label">Pendentes</span>
+                    </div>
+                    <div class="stat-item concluido">
+                        <span class="stat-emoji">✅</span>
+                        <span class="stat-numero">{{ ambiente.num_concluidas }}</span>
+                        <span class="stat-label">Concluídas</span>
+                    </div>
+                    <div class="stat-item atrasado">
+                        <span class="stat-emoji">🔴</span>
+                        <span class="stat-numero">{{ ambiente.num_atrasadas }}</span>
+                        <span class="stat-label">Atrasadas</span>
+                    </div>
+                </div>
+                
+                <div class="card-actions">
+                    <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-card btn-ver">Ver Atividades</a>
+                    <button type="button" onclick="abrirModalEditar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}', '{{ ambiente.tema|escapejs }}')" class="btn-card btn-editar">Editar</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <div class="vazio">Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
+        <div class="vazio">📦 Nenhum ambiente criado. Clique em "Novo Ambiente" para começar.</div>
     {% endif %}
 </div>
 
@@ -281,7 +390,7 @@
         document.getElementById('editar_ambiente_id').value = id;
         document.getElementById('editar_nome').value = nome;
         document.getElementById('editar_tema').value = tema;
-        document.getElementById('formEditarAmbiente').action = "{% url 'lista_ambientes' %}".replace('ambiente/', 'ambiente/' + id + '/editar/');
+        document.getElementById('formEditarAmbiente').action = `/ambiente/${id}/editar/`;
         document.getElementById('modalEditarAmbiente').style.display = 'flex';
         document.getElementById('editar_nome').focus();
     }

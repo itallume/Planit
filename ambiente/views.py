@@ -2,13 +2,18 @@ from django.shortcuts import render, redirect
 
 from ambiente.forms import AmbienteForm
 from ambiente.models import Ambiente
-from django.db.models import Count
+from django.db.models import Count, Q
 
 # Create your views here.
 
 class AmbienteView:
     def lista_ambientes(request):
-        ambientes = Ambiente.objects.annotate(num_atividades=Count('atividade'))
+        ambientes = Ambiente.objects.annotate(
+            num_atividades=Count('atividade'),
+            num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
+            num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
+            num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
+        )
         form = AmbienteForm()
         return render(request, 'ambiente/home.html', {'ambientes': ambientes, 'form': form})
     
@@ -23,7 +28,12 @@ class AmbienteView:
     def criar_ambiente(request):
         if request.method == 'POST':
             form = AmbienteForm(request.POST)
-            ambientes = Ambiente.objects.annotate(num_atividades=Count('atividade'))
+            ambientes = Ambiente.objects.annotate(
+                num_atividades=Count('atividade'),
+                num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
+                num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
+                num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
+            )
             if form.is_valid():
                 form.save()
                 return redirect('lista_ambientes')
@@ -37,7 +47,12 @@ class AmbienteView:
         ambiente = Ambiente.objects.get(id=ambiente_id)
         if request.method == 'POST':
             form = AmbienteForm(request.POST, instance=ambiente)
-            ambientes = Ambiente.objects.annotate(num_atividades=Count('atividade'))
+            ambientes = Ambiente.objects.annotate(
+                num_atividades=Count('atividade'),
+                num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
+                num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
+                num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
+            )
             if form.is_valid():
                 form.save()
                 return redirect('lista_ambientes')
@@ -50,7 +65,12 @@ class AmbienteView:
                 })
         # GET: renderiza home.html com dados do ambiente para edição
         form = AmbienteForm(instance=ambiente)
-        ambientes = Ambiente.objects.annotate(num_atividades=Count('atividade'))
+        ambientes = Ambiente.objects.annotate(
+            num_atividades=Count('atividade'),
+            num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
+            num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
+            num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
+        )
         return render(request, 'ambiente/home.html', {
             'ambientes': ambientes,
             'form_editar': form,

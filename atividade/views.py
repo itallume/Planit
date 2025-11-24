@@ -6,6 +6,7 @@ from datetime import timedelta
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
+import json
 
 class AtividadesPorAmbienteView(ListView):
     model = Atividade
@@ -15,20 +16,33 @@ class AtividadesPorAmbienteView(ListView):
     def get_queryset(self):
         ambiente_id = self.kwargs.get('ambiente_id')
         hoje = timezone.now().date()
-        cinco_dias_atras = hoje - timedelta(days=5)
-        cinco_dias_frente = hoje + timedelta(days=5)
+        trinta_dias_atras = hoje - timedelta(days=30)
+        trinta_dias_frente = hoje + timedelta(days=30)
         
         return Atividade.objects.filter(
             ambiente__id=ambiente_id,
-            data_prevista__gte=cinco_dias_atras,
-            data_prevista__lte=cinco_dias_frente
-        ).order_by('data_prevista', 'hora_prevista')
+            data_prevista__gte=trinta_dias_atras,
+            data_prevista__lte=trinta_dias_frente
+        ).order_by('data_prevista')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ambiente_id = self.kwargs.get('ambiente_id')
         ambiente = get_object_or_404(Ambiente, id=ambiente_id)
         context['ambiente'] = ambiente
+        
+        # Gerar dados para agenda
+        hoje = timezone.now().date()
+        atividades_por_dia = {}
+        for i in range(-30, 31):
+            data = hoje + timedelta(days=i)
+            count = Atividade.objects.filter(
+                ambiente__id=ambiente_id,
+                data_prevista=data
+            ).count()
+            atividades_por_dia[data.isoformat()] = count
+        
+        context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         return context
 
 class AtividadeListView(ListView):
