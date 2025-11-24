@@ -1,32 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excluir Atividade</title>
+{% extends "global/base.html" %}
+
+{% block titulo %}
+    Lista de Atividades
+{% endblock %}
+
+{% block content %}
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background: #181a20;
+            color: #eee;
         }
         .container {
             max-width: 500px;
             margin: 0 auto;
+            margin-bottom: 20px;
         }
         .confirmacao {
-            background-color: #fff3cd;
+            background-color: #23262f;
             padding: 20px;
-            border-radius: 5px;
-            border: 1px solid #ffc107;
+            border-radius: 8px;
+            border: 1px solid #f7c948;
+            color: #f7c948;
+            margin-bottom: 18px;
         }
         .info {
-            background-color: #f9f9f9;
+            background-color:#23262f;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin: 15px 0;
+            color: #eee;
+            border: 1px solid #333;
         }
         .info .label {
             font-weight: bold;
+            color: #4f8cff;
         }
         button {
             padding: 10px 20px;
@@ -84,5 +93,4 @@
             <a href="{% url 'lista_atividades' %}"><button type="button" class="btn-cancelar">Cancelar</button></a>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

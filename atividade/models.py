@@ -1,13 +1,17 @@
 from django.db import models
 
-# Create your models here.
+STATUS_CHOICES = [
+    ("Pendente", "Pendente"),
+    ("Concluído", "Concluído"),
+    ("Atrasado", "Atrasado"),
+]
 class Atividade(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     is_paga = models.BooleanField(default=False)
     valor_recebido = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     data_prevista = models.DateField()
     data_criacao = models.DateField(auto_now_add=True)
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pendente")
     ambiente = models.ForeignKey('ambiente.Ambiente', on_delete=models.CASCADE)
     descricao = models.TextField()
     cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)

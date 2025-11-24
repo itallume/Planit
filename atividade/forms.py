@@ -36,5 +36,5 @@ class ReferenciaForm(forms.ModelForm):
 
 
 # Formsets
-EnderecoFormSet = inlineformset_factory(Cliente, Endereco, form=EnderecoForm, extra=1, can_delete=True)
-ReferenciaFormSet = inlineformset_factory(Atividade, Referencia, form=ReferenciaForm, extra=1, can_delete=True)
+EnderecoFormSet = inlineformset_factory(Cliente, Endereco, form=EnderecoForm, extra=0,can_delete=True)
+ReferenciaFormSet = inlineformset_factory(Atividade, Referencia, form=ReferenciaForm, extra=0, can_delete=True)

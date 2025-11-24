@@ -1,13 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atividades</title>
+{% extends "global/base.html" %}
+
+{% block titulo %}
+    Lista de Atividades
+{% endblock %}
+
+{% block content %}
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background: #181a20;
+            color: #eee;
         }
         .container {
             max-width: 1000px;
@@ -15,15 +18,18 @@
         }
         .btn {
             padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            background-color: #4f8cff;
+            color: #fff;
             text-decoration: none;
             border-radius: 5px;
             display: inline-block;
             margin-bottom: 20px;
+            border: none;
+            transition: background .2s;
         }
         .btn:hover {
-            background-color: #0056b3;
+            background-color: #23262f;
+            color: #fff;
         }
         .btn-small {
             padding: 5px 10px;
@@ -31,7 +37,7 @@
             margin: 0 5px;
         }
         .btn-edit {
-            background-color: #28a745;
+            background-color: #2ecc71;
         }
         .btn-edit:hover {
             background-color: #218838;
@@ -46,19 +52,24 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background: #23262f;
+            color: #eee;
+            border-radius: 8px;
+            overflow: hidden;
         }
         table th, table td {
-            border: 1px solid #ddd;
+            border: 1px solid #333;
             padding: 12px;
             text-align: left;
         }
         table th {
-            background-color: #f2f2f2;
+            background-color: #181a20;
+            color: #4f8cff;
         }
         .vazio {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: #bbb;
         }
         .status {
             padding: 5px 10px;
@@ -66,15 +77,22 @@
             font-weight: bold;
         }
         .status-pendente {
-            background-color: #fff3cd;
-            color: #856404;
+            background-color: #23262f;
+            color: #f7c948;
+            border: 1px solid #f7c948;
         }
         .status-concluido {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: #23262f;
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+        .status-atrasado {
+            background-color: #23262f;
+            color: #dc3545;
+            border: 1px solid #dc3545;
         }
         .paga {
-            color: #28a745;
+            color: #2ecc71;
         }
         .nao-paga {
             color: #dc3545;
@@ -105,7 +123,7 @@
                             <td>{{ atividade.descricao|truncatewords:10 }}</td>
                             <td>R$ {{ atividade.valor|floatformat:2 }}</td>
                             <td>
-                                <span class="status {% if atividade.status == 'Concluído' %}status-concluido{% else %}status-pendente{% endif %}">
+                                <span class="status {% if atividade.status == 'Concluído' %}status-concluido{% elif atividade.status == 'Atrasado' %}status-atrasado{% else %}status-pendente{% endif %}">
                                     {{ atividade.status }}
                                 </span>
                             </td>
@@ -131,5 +149,5 @@
             </div>
         {% endif %}
     </div>
-</body>
-</html>
+{% endblock %}
+
