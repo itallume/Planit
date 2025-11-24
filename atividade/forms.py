@@ -7,9 +7,10 @@ from atividade.models import Atividade, Cliente, Endereco, Referencia
 class AtividadeForm(forms.ModelForm):
     class Meta:
         model = Atividade
-        fields = ['descricao', 'valor', 'valor_recebido', 'data_prevista', 'status', 'is_paga', 'ambiente', 'cliente']
+        fields = ['descricao', 'valor', 'valor_recebido', 'data_prevista', 'hora_prevista', 'status', 'is_paga', 'cliente']
         widgets = {
             'data_prevista': forms.DateInput(attrs={'type': 'date'}),
+            'hora_prevista': forms.TimeInput(attrs={'type': 'time'}),
             'descricao': forms.Textarea(attrs={'rows': 4}),
         }
 

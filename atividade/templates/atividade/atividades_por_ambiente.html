@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividades - {{ ambiente.nome }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .header h1 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+        .vazio {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-pendente {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-concluido {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .paga {
+            color: #28a745;
+        }
+        .nao-paga {
+            color: #dc3545;
+        }
+        .actions a {
+            padding: 5px 10px;
+            margin: 0 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 {{ ambiente.nome }}</h1>
+            <p><strong>Tema:</strong> {{ ambiente.tema }}</p>
+            <div class="header-actions">
+                <a href="{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}" class="btn btn-success">+ Nova Atividade</a>
+                <a href="{% url 'lista_ambientes' %}" class="btn btn-secondary">← Voltar aos Ambientes</a>
+            </div>
+        </div>
+        
+        {% if atividades %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Paga</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atividade in atividades %}
+                        <tr>
+                            <td><strong>{{ atividade.data_prevista|date:"d/m/Y" }}</strong></td>
+                            <td>{{ atividade.descricao|truncatewords:15 }}</td>
+                            <td>R$ {{ atividade.valor|floatformat:2 }}</td>
+                            <td>
+                                <span class="status {% if atividade.status == 'Concluído' %}status-concluido{% else %}status-pendente{% endif %}">
+                                    {{ atividade.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="{% if atividade.is_paga %}paga{% else %}nao-paga{% endif %}">
+                                    {% if atividade.is_paga %}✓{% else %}✗{% endif %}
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <a href="{% url 'detalhe_atividade' atividade.id %}" class="btn">Ver</a>
+                                <a href="{% url 'editar_atividade' atividade.id %}" class="btn">Editar</a>
+                                <a href="{% url 'deletar_atividade' atividade.id %}" class="btn">Deletar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="vazio">
+                <p>📭 Nenhuma atividade prevista para os próximos 7 dias.</p>
+                <a href="{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}" class="btn btn-success">+ Criar Primeira Atividade</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

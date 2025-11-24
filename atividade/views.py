@@ -5,7 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
-
+from ambiente.models import Ambiente
 
 class AtividadesPorAmbienteView(ListView):
     model = Atividade
@@ -15,13 +15,21 @@ class AtividadesPorAmbienteView(ListView):
     def get_queryset(self):
         ambiente_id = self.kwargs.get('ambiente_id')
         hoje = timezone.now().date()
-        sete_dias = hoje + timedelta(days=7)
+        cinco_dias_atras = hoje - timedelta(days=5)
+        cinco_dias_frente = hoje + timedelta(days=5)
         
         return Atividade.objects.filter(
             ambiente__id=ambiente_id,
-            data_prevista__gte=hoje,
-            data_prevista__lte=sete_dias
+            data_prevista__gte=cinco_dias_atras,
+            data_prevista__lte=cinco_dias_frente
         ).order_by('data_prevista', 'hora_prevista')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ambiente_id = self.kwargs.get('ambiente_id')
+        ambiente = get_object_or_404(Ambiente, id=ambiente_id)
+        context['ambiente'] = ambiente
+        return context
 
 class AtividadeListView(ListView):
     model = Atividade
@@ -54,11 +62,25 @@ class AtividadeCreateView(CreateView):
     template_name = 'atividade/form.html'
     success_url = reverse_lazy('lista_atividades')
     
+    def get_success_url(self):
+        ambiente_id = self.request.GET.get('ambiente_id')
+        if ambiente_id:
+            return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': ambiente_id})
+        return reverse_lazy('lista_atividades')
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Renomear 'form' para 'atividade_form' para manter compatibilidade com o template
         if 'form' in context:
             context['atividade_form'] = context.pop('form')
+        
+        ambiente_id = self.request.GET.get('ambiente_id')
+        if ambiente_id:
+            try:
+                ambiente = Ambiente.objects.get(id=ambiente_id)
+                context['ambiente'] = ambiente
+            except Ambiente.DoesNotExist:
+                pass
         
         if self.request.POST:
             context['cliente_form'] = ClienteForm(self.request.POST, prefix='cliente')
@@ -71,13 +93,28 @@ class AtividadeCreateView(CreateView):
         return context
     
     def form_valid(self, form):
+        ambiente_id = self.request.GET.get('ambiente_id')
+        
         context = self.get_context_data()
         cliente_form = context['cliente_form']
         endereco_formset = context['endereco_formset']
         referencia_formset = context['referencia_formset']
         
+        # Validar que o ambiente foi definido
+        if not ambiente_id:
+            form.add_error(None, 'É necessário selecionar um ambiente')
+            return self.form_invalid(form)
+        
+        try:
+            ambiente = Ambiente.objects.get(id=ambiente_id)
+        except Ambiente.DoesNotExist:
+            form.add_error(None, 'Ambiente inválido')
+            return self.form_invalid(form)
+        
         if cliente_form.is_valid() and endereco_formset.is_valid() and referencia_formset.is_valid():
-            self.object = form.save()
+            self.object = form.save(commit=False)
+            self.object.ambiente = ambiente
+            self.object.save()
             
             # Salvar cliente se foi preenchido
             if cliente_form.cleaned_data.get('nome'):
@@ -91,7 +128,7 @@ class AtividadeCreateView(CreateView):
             referencia_formset.instance = self.object
             referencia_formset.save()
             
-            return redirect(self.success_url)
+            return redirect(self.get_success_url())
         else:
             return self.form_invalid(form)
 
