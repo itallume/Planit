@@ -10,6 +10,7 @@ class Atividade(models.Model):
     is_paga = models.BooleanField(default=False)
     valor_recebido = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     data_prevista = models.DateField()
+    hora_prevista = models.TimeField()
     data_criacao = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pendente")
     ambiente = models.ForeignKey('ambiente.Ambiente', on_delete=models.CASCADE)

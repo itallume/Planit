@@ -1,9 +1,27 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.utils import timezone
+from datetime import timedelta
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 
+
+class AtividadesPorAmbienteView(ListView):
+    model = Atividade
+    template_name = 'atividade/atividades_por_ambiente.html'
+    context_object_name = 'atividades'
+
+    def get_queryset(self):
+        ambiente_id = self.kwargs.get('ambiente_id')
+        hoje = timezone.now().date()
+        sete_dias = hoje + timedelta(days=7)
+        
+        return Atividade.objects.filter(
+            ambiente__id=ambiente_id,
+            data_prevista__gte=hoje,
+            data_prevista__lte=sete_dias
+        ).order_by('data_prevista', 'hora_prevista')
 
 class AtividadeListView(ListView):
     model = Atividade
