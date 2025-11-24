@@ -1,131 +1,148 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
-from django.views.generic import ListView
-# Create your views here.
+
 
 class AtividadeListView(ListView):
     model = Atividade
     template_name = 'atividade/lista.html'
     context_object_name = 'atividades'
+    paginate_by = 10
 
+
+class AtividadeDetailView(DetailView):
+    model = Atividade
+    template_name = 'atividade/detalhe.html'
+    context_object_name = 'atividade'
+    pk_url_kwarg = 'atividade_id'
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(context)
+        atividade = self.get_object()
+        context['referencias'] = atividade.referencia_set.all()
+        context['cliente'] = atividade.cliente
+        if atividade.cliente:
+            context['enderecos'] = atividade.cliente.endereco_set.all()
+        else:
+            context['enderecos'] = []
         return context
 
-class AtividadeView:
-    def lista_atividades(request):
-        atividades = Atividade.objects.all()
-        return render(request, 'atividade/lista.html', {'atividades': atividades})
+
+class AtividadeCreateView(CreateView):
+    model = Atividade
+    form_class = AtividadeForm
+    template_name = 'atividade/form.html'
+    success_url = reverse_lazy('lista_atividades')
     
-    def detalhe_atividade(request, atividade_id):
-        atividade = get_object_or_404(Atividade, id=atividade_id)
-        referencias = atividade.referencia_set.all()
-        cliente = atividade.cliente
-        enderecos = cliente.endereco_set.all() if cliente else []
-        return render(request, 'atividade/detalhe.html', {
-            'atividade': atividade,
-            'referencias': referencias,
-            'cliente': cliente,
-            'enderecos': enderecos
-        })
-    
-    def criar_atividade(request):
-        if request.method == 'POST':
-            atividade_form = AtividadeForm(request.POST)
-            cliente_form = ClienteForm(request.POST, prefix='cliente')
-            
-            if atividade_form.is_valid() and cliente_form.is_valid():
-                atividade = atividade_form.save()
-                
-                # Salvar cliente se foi preenchido
-                if cliente_form.cleaned_data.get('nome'):
-                    cliente = cliente_form.save()
-                    endereco_formset = EnderecoFormSet(request.POST, instance=cliente, prefix='endereco')
-                    if endereco_formset.is_valid():
-                        endereco_formset.save()
-                    atividade.cliente = cliente
-                    atividade.save()
-                
-                # Salvar referências
-                referencia_formset = ReferenciaFormSet(request.POST, request.FILES, instance=atividade, prefix='referencia')
-                if referencia_formset.is_valid():
-                    referencia_formset.save()
-                
-                return redirect('lista_atividades')
-            else:
-                endereco_formset = EnderecoFormSet(request.POST, prefix='endereco')
-                referencia_formset = ReferenciaFormSet(request.POST, request.FILES, prefix='referencia')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Renomear 'form' para 'atividade_form' para manter compatibilidade com o template
+        if 'form' in context:
+            context['atividade_form'] = context.pop('form')
+        
+        if self.request.POST:
+            context['cliente_form'] = ClienteForm(self.request.POST, prefix='cliente')
+            context['endereco_formset'] = EnderecoFormSet(self.request.POST, prefix='endereco')
+            context['referencia_formset'] = ReferenciaFormSet(self.request.POST, self.request.FILES, prefix='referencia')
         else:
-            atividade_form = AtividadeForm()
-            cliente_form = ClienteForm(prefix='cliente')
-            endereco_formset = EnderecoFormSet(prefix='endereco')
-            referencia_formset = ReferenciaFormSet(prefix='referencia')
-        
-        return render(request, 'atividade/form.html', {
-            'atividade_form': atividade_form,
-            'cliente_form': cliente_form,
-            'endereco_formset': endereco_formset,
-            'referencia_formset': referencia_formset
-        })
+            context['cliente_form'] = ClienteForm(prefix='cliente')
+            context['endereco_formset'] = EnderecoFormSet(prefix='endereco')
+            context['referencia_formset'] = ReferenciaFormSet(prefix='referencia')
+        return context
     
-    def editar_atividade(request, atividade_id):
-        atividade = get_object_or_404(Atividade, id=atividade_id)
+    def form_valid(self, form):
+        context = self.get_context_data()
+        cliente_form = context['cliente_form']
+        endereco_formset = context['endereco_formset']
+        referencia_formset = context['referencia_formset']
+        
+        if cliente_form.is_valid() and endereco_formset.is_valid() and referencia_formset.is_valid():
+            self.object = form.save()
+            
+            # Salvar cliente se foi preenchido
+            if cliente_form.cleaned_data.get('nome'):
+                cliente = cliente_form.save()
+                endereco_formset.instance = cliente
+                endereco_formset.save()
+                self.object.cliente = cliente
+                self.object.save()
+            
+            # Salvar referências
+            referencia_formset.instance = self.object
+            referencia_formset.save()
+            
+            return redirect(self.success_url)
+        else:
+            return self.form_invalid(form)
+
+
+class AtividadeUpdateView(UpdateView):
+    model = Atividade
+    form_class = AtividadeForm
+    template_name = 'atividade/form.html'
+    pk_url_kwarg = 'atividade_id'
+    success_url = reverse_lazy('lista_atividades')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Renomear 'form' para 'atividade_form' para manter compatibilidade com o template
+        if 'form' in context:
+            context['atividade_form'] = context.pop('form')
+        
+        atividade = self.get_object()
         cliente = atividade.cliente
         
-        if request.method == 'POST':
-            atividade_form = AtividadeForm(request.POST, instance=atividade)
-            
+        if self.request.POST:
+            context['cliente_form'] = ClienteForm(self.request.POST, instance=cliente, prefix='cliente')
             if cliente:
-                cliente_form = ClienteForm(request.POST, instance=cliente, prefix='cliente')
-                endereco_formset = EnderecoFormSet(request.POST, instance=cliente, prefix='endereco')
+                context['endereco_formset'] = EnderecoFormSet(self.request.POST, instance=cliente, prefix='endereco')
             else:
-                cliente_form = ClienteForm(request.POST, prefix='cliente')
-                endereco_formset = EnderecoFormSet(request.POST, prefix='endereco')
-            
-            referencia_formset = ReferenciaFormSet(request.POST, request.FILES, instance=atividade, prefix='referencia')
-            
-            if atividade_form.is_valid() and cliente_form.is_valid() and referencia_formset.is_valid():
-                atividade = atividade_form.save()
-                
-                # Salvar cliente
-                if cliente_form.cleaned_data.get('nome'):
-                    cliente = cliente_form.save()
-                    if endereco_formset.is_valid():
-                        endereco_formset.save()
-                    atividade.cliente = cliente
-                    atividade.save()
-                
-                # Salvar referências
-                referencia_formset.save()
-                
-                return redirect('lista_atividades')
+                context['endereco_formset'] = EnderecoFormSet(self.request.POST, prefix='endereco')
+            context['referencia_formset'] = ReferenciaFormSet(self.request.POST, self.request.FILES, instance=atividade, prefix='referencia')
         else:
-            atividade_form = AtividadeForm(instance=atividade)
-            
+            context['cliente_form'] = ClienteForm(instance=cliente, prefix='cliente')
             if cliente:
-                cliente_form = ClienteForm(instance=cliente, prefix='cliente')
-                endereco_formset = EnderecoFormSet(instance=cliente, prefix='endereco')
+                context['endereco_formset'] = EnderecoFormSet(instance=cliente, prefix='endereco')
             else:
-                cliente_form = ClienteForm(prefix='cliente')
-                endereco_formset = EnderecoFormSet(prefix='endereco')
-            
-            referencia_formset = ReferenciaFormSet(instance=atividade, prefix='referencia')
+                context['endereco_formset'] = EnderecoFormSet(prefix='endereco')
+            context['referencia_formset'] = ReferenciaFormSet(instance=atividade, prefix='referencia')
         
-        return render(request, 'atividade/form.html', {
-            'atividade_form': atividade_form,
-            'cliente_form': cliente_form,
-            'endereco_formset': endereco_formset,
-            'referencia_formset': referencia_formset,
-            'atividade': atividade
-        })
+        context['atividade'] = atividade
+        return context
     
-    def deletar_atividade(request, atividade_id):
-        atividade = get_object_or_404(Atividade, id=atividade_id)
-        if request.method == 'POST':
-            atividade.delete()
-            return redirect('lista_atividades')
-        return render(request, 'atividade/deletar.html', {'atividade': atividade})
+    def form_valid(self, form):
+        context = self.get_context_data()
+        cliente_form = context['cliente_form']
+        endereco_formset = context['endereco_formset']
+        referencia_formset = context['referencia_formset']
+        
+        if cliente_form.is_valid() and endereco_formset.is_valid() and referencia_formset.is_valid():
+            self.object = form.save()
+            
+            # Salvar cliente
+            if cliente_form.cleaned_data.get('nome'):
+                cliente = cliente_form.save()
+                endereco_formset.instance = cliente
+                endereco_formset.save()
+                self.object.cliente = cliente
+                self.object.save()
+            
+            # Salvar referências
+            referencia_formset.instance = self.object
+            referencia_formset.save()
+            
+            return redirect(self.success_url)
+        else:
+            return self.form_invalid(form)
+
+
+class AtividadeDeleteView(DeleteView):
+    model = Atividade
+    template_name = 'atividade/deletar.html'
+    context_object_name = 'atividade'
+    pk_url_kwarg = 'atividade_id'
+    success_url = reverse_lazy('lista_atividades')
 
 

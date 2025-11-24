@@ -26,7 +26,7 @@ class Referencia(models.Model):
     
 class Cliente(models.Model):
     nome = models.CharField(max_length=200)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     telefone = models.CharField(max_length=20)
     sobre = models.TextField()
 

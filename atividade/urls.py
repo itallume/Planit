@@ -1,10 +1,13 @@
-from .views import AtividadeView, AtividadeListView
+from .views import (
+    AtividadeListView, AtividadeDetailView, AtividadeCreateView, 
+    AtividadeUpdateView, AtividadeDeleteView
+)
 from django.urls import path
 
 urlpatterns = [
     path('', AtividadeListView.as_view(), name='lista_atividades'),
-    path('criar/', AtividadeView.criar_atividade, name='criar_atividade'),
-    path('<int:atividade_id>/', AtividadeView.detalhe_atividade, name='detalhe_atividade'),
-    path('<int:atividade_id>/editar/', AtividadeView.editar_atividade, name='editar_atividade'),
-    path('<int:atividade_id>/deletar/', AtividadeView.deletar_atividade, name='deletar_atividade'),
+    path('criar/', AtividadeCreateView.as_view(), name='criar_atividade'),
+    path('<int:atividade_id>/', AtividadeDetailView.as_view(), name='detalhe_atividade'),
+    path('<int:atividade_id>/editar/', AtividadeUpdateView.as_view(), name='editar_atividade'),
+    path('<int:atividade_id>/deletar/', AtividadeDeleteView.as_view(), name='deletar_atividade'),
 ]
