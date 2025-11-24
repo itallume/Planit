@@ -2,10 +2,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.http import JsonResponse
+from django.db.models import Q
 from datetime import timedelta
 from .models import Atividade, Cliente
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
+
+
+def buscar_clientes(request):
+    """API para buscar clientes por nome ou email"""
+    query = request.GET.get('q', '').strip()
+    clientes = Cliente.objects.all().order_by('nome')
+    
+    if query:
+        clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
+    limit = 10 if query else 20
+    clientes = clientes.values('id', 'nome', 'email')[:limit]
+    return JsonResponse(list(clientes), safe=False)
 
 class AtividadesPorAmbienteView(ListView):
     model = Atividade
@@ -111,26 +125,44 @@ class AtividadeCreateView(CreateView):
             form.add_error(None, 'Ambiente inválido')
             return self.form_invalid(form)
         
-        if cliente_form.is_valid() and endereco_formset.is_valid() and referencia_formset.is_valid():
-            self.object = form.save(commit=False)
-            self.object.ambiente = ambiente
-            self.object.save()
+        # Validar referências formset primeiro (sempre necessário)
+        if not referencia_formset.is_valid():
+            return self.form_invalid(form)
+        
+        # Processar cliente - pode vir do campo cliente (já preenchido via JS) ou do formulário novo
+        cliente_id = self.request.POST.get('atividade_form-cliente')
+        criar_novo = self.request.POST.get('criar-novo-cliente')
+        cliente = None
+        
+        if cliente_id:
+            # Cliente existente foi selecionado
+            try:
+                cliente = Cliente.objects.get(id=cliente_id)
+            except Cliente.DoesNotExist:
+                form.add_error(None, 'Cliente selecionado não existe')
+                return self.form_invalid(form)
+        elif criar_novo:
+            # Novo cliente será criado
+            if not cliente_form.is_valid() or not endereco_formset.is_valid():
+                return self.form_invalid(form)
             
-            # Salvar cliente se foi preenchido
             if cliente_form.cleaned_data.get('nome'):
                 cliente = cliente_form.save()
                 endereco_formset.instance = cliente
                 endereco_formset.save()
-                self.object.cliente = cliente
-                self.object.save()
-            
-            # Salvar referências
-            referencia_formset.instance = self.object
-            referencia_formset.save()
-            
-            return redirect(self.get_success_url())
-        else:
-            return self.form_invalid(form)
+        
+        # Salvar atividade
+        self.object = form.save(commit=False)
+        self.object.ambiente = ambiente
+        if cliente:
+            self.object.cliente = cliente
+        self.object.save()
+        
+        # Salvar referências
+        referencia_formset.instance = self.object
+        referencia_formset.save()
+        
+        return redirect(self.get_success_url())
 
 
 class AtividadeUpdateView(UpdateView):
@@ -173,24 +205,45 @@ class AtividadeUpdateView(UpdateView):
         endereco_formset = context['endereco_formset']
         referencia_formset = context['referencia_formset']
         
-        if cliente_form.is_valid() and endereco_formset.is_valid() and referencia_formset.is_valid():
-            self.object = form.save()
+        # Validar referências formset primeiro (sempre necessário)
+        if not referencia_formset.is_valid():
+            return self.form_invalid(form)
+        
+        # Processar cliente
+        cliente_id = self.request.POST.get('atividade_form-cliente')
+        criar_novo = self.request.POST.get('criar-novo-cliente')
+        cliente = None
+        
+        if cliente_id:
+            # Cliente existente foi selecionado
+            try:
+                cliente = Cliente.objects.get(id=cliente_id)
+            except Cliente.DoesNotExist:
+                form.add_error(None, 'Cliente selecionado não existe')
+                return self.form_invalid(form)
+        elif criar_novo:
+            # Novo cliente ou atualizar cliente existente
+            if not cliente_form.is_valid() or not endereco_formset.is_valid():
+                return self.form_invalid(form)
             
-            # Salvar cliente
             if cliente_form.cleaned_data.get('nome'):
                 cliente = cliente_form.save()
                 endereco_formset.instance = cliente
                 endereco_formset.save()
-                self.object.cliente = cliente
-                self.object.save()
-            
-            # Salvar referências
-            referencia_formset.instance = self.object
-            referencia_formset.save()
-            
-            return redirect(self.success_url)
-        else:
-            return self.form_invalid(form)
+        
+        # Salvar atividade
+        self.object = form.save()
+        
+        # Atualizar cliente
+        if cliente:
+            self.object.cliente = cliente
+            self.object.save()
+        
+        # Salvar referências
+        referencia_formset.instance = self.object
+        referencia_formset.save()
+        
+        return redirect(self.success_url)
 
 
 class AtividadeDeleteView(DeleteView):
