@@ -647,7 +647,7 @@
                 <!-- Checkbox para Criar Novo Cliente -->
                 <div class="form-group">
                     <div class="checkbox-wrapper" style="padding: 15px;">
-                        <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" />
+                        <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" {% if request.POST|length > 0 and 'criar-novo-cliente' in request.POST %}checked{% endif %} />
                         <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: var(--text-light); flex: 1;">
                             <i class="fas fa-user-plus"></i> Criar novo cliente
                         </label>
@@ -657,23 +657,57 @@
 
             <div id="novo-cliente-form" class="conditional-section" style="display: none;">
                 <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-file-alt"></i> Dados do Novo Cliente</h3>
+                
+                {% if cliente_form.errors %}
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <strong style="color: var(--status-delayed);">Erros no formulário de cliente:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; color: var(--status-delayed);">
+                        {% for field, errors in cliente_form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
                 <div class="form-row">
                     <div class="form-group">
                         {{ cliente_form.nome.label_tag }}
                         {{ cliente_form.nome }}
+                        {% if cliente_form.nome.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ cliente_form.nome.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         {{ cliente_form.email.label_tag }}
                         {{ cliente_form.email }}
+                        {% if cliente_form.email.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ cliente_form.email.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="form-group">
                     {{ cliente_form.telefone.label_tag }}
                     {{ cliente_form.telefone }}
+                    {% if cliente_form.telefone.errors %}
+                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                            {{ cliente_form.telefone.errors }}
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     {{ cliente_form.sobre.label_tag }}
                     {{ cliente_form.sobre }}
+                    {% if cliente_form.sobre.errors %}
+                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                            {{ cliente_form.sobre.errors }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -682,6 +716,16 @@
         <div id="tab-endereco" class="tab-content">
             <div class="form-section">
                 <h3>Endereços do Cliente</h3>
+                
+                {% if endereco_formset.non_form_errors %}
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <strong style="color: var(--status-delayed);">Erros nos endereços:</strong>
+                    <div style="margin-top: 8px; color: var(--status-delayed);">
+                        {{ endereco_formset.non_form_errors }}
+                    </div>
+                </div>
+                {% endif %}
+                
                 {{ endereco_formset.management_form }}
                 <div id="enderecos-container" class="formset-container">
                     {% for form in endereco_formset %}
@@ -916,33 +960,24 @@
 
     // Checkbox para criar novo cliente
     criarNovoCheckbox.addEventListener('change', (e) => {
-        const campos = novoClienteForm.querySelectorAll('input, select, textarea');
-        
         if (e.target.checked) {
             novoClienteForm.classList.add('visible');
             novoClienteForm.style.display = 'block';
             clienteSelecionado.style.display = 'none';
             clienteField.value = '';
+            document.getElementById('cliente-id-hidden').value = '';
             searchInput.value = '';
-            // Habilitar campos
-            campos.forEach(campo => {
-                campo.disabled = false;
-            });
         } else {
             novoClienteForm.classList.remove('visible');
             novoClienteForm.style.display = 'none';
-            // Desabilitar campos para não serem validados
-            campos.forEach(campo => {
-                campo.disabled = true;
-            });
         }
     });
     
-    // Desabilitar campos inicialmente
-    const camposIniciais = novoClienteForm.querySelectorAll('input, select, textarea');
-    camposIniciais.forEach(campo => {
-        campo.disabled = true;
-    });
+    // Verificar se o checkbox está marcado no carregamento (após erro de validação)
+    if (criarNovoCheckbox.checked) {
+        novoClienteForm.classList.add('visible');
+        novoClienteForm.style.display = 'block';
+    }
 
     // Fechar dropdown ao clicar fora
     document.addEventListener('click', (e) => {

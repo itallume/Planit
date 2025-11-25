@@ -162,23 +162,27 @@ class AtividadeCreateView(CreateView):
                 return self.form_invalid(form)
         elif criar_novo:
             # Novo cliente será criado
-            # Validar formulário de cliente primeiro
-            if not cliente_form.is_valid():
-                return self.form_invalid(form)
-            
-            # Salvar cliente primeiro
-            if cliente_form.cleaned_data.get('nome'):
+            # Validar formulário de cliente
+            if cliente_form.is_valid() and cliente_form.cleaned_data.get('nome'):
+                # Salvar cliente
                 cliente = cliente_form.save()
                 
-                # Agora atribuir instância e validar endereços
+                # Atribuir instância e validar endereços
                 endereco_formset.instance = cliente
-                if not endereco_formset.is_valid():
+                if endereco_formset.is_bound and not endereco_formset.is_valid():
                     # Se endereços inválidos, deletar cliente criado para manter consistência
                     cliente.delete()
                     return self.form_invalid(form)
                 
-                # Salvar endereços
-                endereco_formset.save()
+                # Salvar endereços se houver
+                if endereco_formset.is_bound:
+                    endereco_formset.save()
+            elif cliente_form.is_valid():
+                # Checkbox marcado mas sem nome - apenas continua sem cliente
+                pass
+            else:
+                # Formulário de cliente inválido - retornar erro
+                return self.form_invalid(form)
         
         # Salvar atividade
         self.object = form.save(commit=False)
@@ -254,23 +258,27 @@ class AtividadeUpdateView(UpdateView):
                 return self.form_invalid(form)
         elif criar_novo:
             # Novo cliente ou atualizar cliente existente
-            # Validar formulário de cliente primeiro
-            if not cliente_form.is_valid():
-                return self.form_invalid(form)
-            
-            # Salvar cliente primeiro
-            if cliente_form.cleaned_data.get('nome'):
+            # Validar formulário de cliente
+            if cliente_form.is_valid() and cliente_form.cleaned_data.get('nome'):
+                # Salvar cliente
                 cliente = cliente_form.save()
                 
-                # Agora atribuir instância e validar endereços
+                # Atribuir instância e validar endereços
                 endereco_formset.instance = cliente
-                if not endereco_formset.is_valid():
+                if endereco_formset.is_bound and not endereco_formset.is_valid():
                     # Se endereços inválidos, deletar cliente criado para manter consistência
                     cliente.delete()
                     return self.form_invalid(form)
                 
-                # Salvar endereços
-                endereco_formset.save()
+                # Salvar endereços se houver
+                if endereco_formset.is_bound:
+                    endereco_formset.save()
+            elif cliente_form.is_valid():
+                # Checkbox marcado mas sem nome - apenas continua sem cliente
+                pass
+            else:
+                # Formulário de cliente inválido - retornar erro
+                return self.form_invalid(form)
         
         # Salvar atividade
         self.object = form.save()
