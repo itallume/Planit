@@ -266,9 +266,9 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                         <!-- Delete -->
-                        <a href="{% url 'deletar_ambiente' ambiente.id %}" class="icon-btn delete" title="Excluir">
+                        <button onclick="abrirModalDeletar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}')" class="icon-btn delete" title="Excluir">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -361,6 +361,29 @@
     </div>
 </div>
 
+<!-- Modal Deletar Ambiente -->
+<div id="modalDeletarAmbiente" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="color: var(--text-dark); margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--status-delayed)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            Excluir Ambiente
+        </h3>
+        <p style="color: var(--text-dark); margin: 12px 0;">Tem certeza que deseja excluir o ambiente <strong id="deletar_nome_ambiente"></strong>?</p>
+        <div style="background: #fed7d7; border-left: 4px solid var(--status-delayed); padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+            <p style="color: var(--text-dark); margin: 0; font-size: 0.9rem;">
+                <strong>⚠️ Atenção:</strong> Todas as atividades associadas a este ambiente também serão deletadas. Esta ação é irreversível.
+            </p>
+        </div>
+        <form method="POST" id="formDeletarAmbiente">
+            {% csrf_token %}
+            <div class="modal-buttons">
+                <button type="button" onclick="fecharModalDeletar()" class="btn-cancelar">Cancelar</button>
+                <button type="submit" class="btn-salvar" style="background: var(--status-delayed);">Deletar Ambiente</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function abrirModalAmbiente() {
         document.getElementById('modalAmbiente').style.display = 'flex';
@@ -390,6 +413,16 @@
         document.getElementById('editar_error_tema').textContent = '';
     }
     
+    function abrirModalDeletar(id, nome) {
+        document.getElementById('deletar_nome_ambiente').textContent = nome;
+        document.getElementById('formDeletarAmbiente').action = `/ambiente/${id}/deletar/`;
+        document.getElementById('modalDeletarAmbiente').style.display = 'flex';
+    }
+    
+    function fecharModalDeletar() {
+        document.getElementById('modalDeletarAmbiente').style.display = 'none';
+    }
+    
     // Close on click outside
     window.onclick = function(event) {
         if (event.target == document.getElementById('modalAmbiente')) {
@@ -397,6 +430,9 @@
         }
         if (event.target == document.getElementById('modalEditarAmbiente')) {
             fecharModalEditar();
+        }
+        if (event.target == document.getElementById('modalDeletarAmbiente')) {
+            fecharModalDeletar();
         }
     }
     

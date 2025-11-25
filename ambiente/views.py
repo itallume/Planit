@@ -78,6 +78,11 @@ class AmbienteView:
         })
     
     def deletar_ambiente(request, ambiente_id):
-        return render(request, 'ambiente/deletar.html', {'ambiente_id': ambiente_id})
+        ambiente = Ambiente.objects.get(id=ambiente_id)
+        if request.method == 'POST':
+            ambiente.delete()
+            return redirect('lista_ambientes')
+        # GET: não renderiza nada, apenas redireciona (o modal é aberto via JS)
+        return redirect('lista_ambientes')
     
     
