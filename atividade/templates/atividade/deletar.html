@@ -1,96 +1,227 @@
 {% extends "global/base.html" %}
 
 {% block titulo %}
-    Lista de Atividades
+    Excluir Atividade
 {% endblock %}
 
 {% block content %}
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #181a20;
-            color: #eee;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            margin-bottom: 20px;
-        }
-        .confirmacao {
-            background-color: #23262f;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #f7c948;
-            color: #f7c948;
-            margin-bottom: 18px;
-        }
-        .info {
-            background-color:#23262f;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            color: #eee;
-            border: 1px solid #333;
-        }
-        .info .label {
-            font-weight: bold;
-            color: #4f8cff;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-            color: white;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-        }
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        .btn-cancelar {
-            background-color: #6c757d;
-        }
-        .btn-cancelar:hover {
-            background-color: #5a6268;
-        }
+<style>
+    body {
+        display: block !important;
+    }
+    
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .page-header {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        color: var(--text-light);
+        margin: 0 0 12px 0;
+        font-weight: 700;
+    }
+    
+    .page-header p {
+        margin: 0;
+        color: var(--green-light);
+        font-size: 1.05rem;
+        opacity: 0.9;
+    }
+    
+    .warning-box {
+        background: rgba(245, 158, 11, 0.1);
+        border: 2px solid var(--status-pending);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+    
+    .warning-box i {
+        font-size: 3rem;
+        color: var(--status-pending);
+        margin-bottom: 16px;
+        display: block;
+    }
+    
+    .warning-box h2 {
+        color: var(--status-pending);
+        font-size: 1.5rem;
+        margin: 0 0 12px 0;
+        font-weight: 700;
+    }
+    
+    .warning-box p {
+        color: var(--text-light);
+        margin: 0;
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    .info-section {
+        background: #1a1a16;
+        border-radius: 12px;
+        border: 1px solid rgba(163, 204, 171, 0.15);
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+    
+    .info-section h3 {
+        color: var(--green-light);
+        font-size: 1.125rem;
+        margin: 0 0 20px 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-item {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(163, 204, 171, 0.1);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-item .label {
+        font-weight: 600;
+        color: rgba(163, 204, 171, 0.8);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+    }
+    
+    .info-item .value {
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 32px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-delete {
+        background: var(--status-delayed);
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-cancelar {
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+    }
+    
+    .btn-cancelar:hover {
+        background: rgba(163, 204, 171, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
         .actions {
-            margin-top: 20px;
+            flex-direction: column-reverse;
         }
-    </style>
-</head>
-<body>
-    <div class="container">
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="delete-container">
+    <div class="page-header">
         <h1>Excluir Atividade</h1>
-        <div class="confirmacao">
-            <p><i class="fas fa-exclamation-triangle"></i> <strong>Tem certeza que deseja excluir esta atividade?</strong></p>
-            <p>Esta ação não pode ser desfeita.</p>
-        </div>
-        
-        <div class="info">
-            <div class="label">Descrição:</div>
-            <div>{{ atividade.descricao|truncatewords:20 }}</div>
-        </div>
-        
-        <div class="info">
-            <div class="label">Valor:</div>
-            <div>R$ {{ atividade.valor|floatformat:2 }}</div>
-        </div>
-        
-        <div class="info">
-            <div class="label">Data Prevista:</div>
-            <div>{{ atividade.data_prevista|date:"d/m/Y" }}</div>
-        </div>
-        
-        <div class="actions">
-            <form method="POST" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-delete">Confirmar Exclusão</button>
-            </form>
-            <a href="{% url 'atividades_por_ambiente' ambiente_id %}"><button type="button" class="btn-cancelar">Cancelar</button></a>
-        </div>
+        <p>Confirme a exclusão da atividade</p>
     </div>
+    
+    <div class="warning-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Atenção!</h2>
+        <p>Tem certeza que deseja excluir esta atividade?</p>
+        <p style="margin-top: 8px; font-size: 0.875rem; opacity: 0.8;">Esta ação não pode ser desfeita.</p>
+    </div>
+    
+    <div class="info-section">
+        <h3><i class="fas fa-info-circle"></i> Informações da Atividade</h3>
+        
+        <div class="info-item">
+            <div class="label">Descrição</div>
+            <div class="value">{{ atividade.descricao|truncatewords:30 }}</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="label">Valor</div>
+            <div class="value">R$ {{ atividade.valor|floatformat:2 }}</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="label">Data Prevista</div>
+            <div class="value">{{ atividade.data_prevista|date:"d/m/Y" }}</div>
+        </div>
+        
+        <div class="info-item">
+            <div class="label">Status</div>
+            <div class="value">
+                <span style="padding: 4px 12px; border-radius: 12px; font-size: 0.875rem; font-weight: 600; 
+                    {% if atividade.status == 'Concluído' %}background: rgba(16, 185, 129, 0.15); color: var(--status-completed);
+                    {% elif atividade.status == 'Atrasado' %}background: rgba(239, 68, 68, 0.15); color: var(--status-delayed);
+                    {% else %}background: rgba(245, 158, 11, 0.15); color: var(--status-pending);{% endif %}">
+                    {{ atividade.status }}
+                </span>
+            </div>
+        </div>
+        
+        {% if atividade.cliente %}
+        <div class="info-item">
+            <div class="label">Cliente</div>
+            <div class="value">{{ atividade.cliente.nome }}</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="actions">
+        <a href="{% url 'atividades_por_ambiente' ambiente_id %}" class="btn btn-cancelar">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+        <form method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-delete">
+                <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}
