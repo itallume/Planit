@@ -533,15 +533,15 @@
 
 <div class="form-container">
     <div class="form-header">
-        <h1>{% if atividade %}✏️ Editar Atividade{% else %}➕ Nova Atividade{% endif %}</h1>
+        <h1>{% if atividade %}<i class="fas fa-edit"></i> Editar Atividade{% else %}<i class="fas fa-plus-circle"></i> Nova Atividade{% endif %}</h1>
         <p>Complete os dados da atividade abaixo</p>
     </div>
 
     <div class="tabs-container">
-        <button type="button" class="tab-btn active" data-tab="tab-atividade">📋 Atividade</button>
-        <button type="button" class="tab-btn" data-tab="tab-cliente">👤 Cliente</button>
-        <button type="button" class="tab-btn" data-tab="tab-endereco">📍 Endereços</button>
-        <button type="button" class="tab-btn" data-tab="tab-referencias">📎 Referências</button>
+        <button type="button" class="tab-btn active" data-tab="tab-atividade"><i class="fas fa-clipboard-list"></i> Atividade</button>
+        <button type="button" class="tab-btn" data-tab="tab-cliente"><i class="fas fa-user"></i> Cliente</button>
+        <button type="button" class="tab-btn" data-tab="tab-endereco"><i class="fas fa-map-marker-alt"></i> Endereços</button>
+        <button type="button" class="tab-btn" data-tab="tab-referencias"><i class="fas fa-paperclip"></i> Referências</button>
     </div>
 
     <form method="POST" enctype="multipart/form-data">
@@ -630,11 +630,11 @@
                     <div class="cliente-card-selected">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-weight: 600; color: var(--green-light); margin-bottom: 5px;">✓ Cliente Selecionado</div>
+                                <div style="font-weight: 600; color: var(--green-light); margin-bottom: 5px;"><i class="fas fa-check-circle"></i> Cliente Selecionado</div>
                                 <div id="cliente-nome" style="color: var(--text-light); font-size: 15px; margin-bottom: 3px;"></div>
                                 <div id="cliente-email" style="color: rgba(163, 204, 171, 0.7); font-size: 13px;"></div>
                             </div>
-                            <button type="button" id="btn-limpar-cliente" class="btn-limpar-cliente">✕</button>
+                            <button type="button" id="btn-limpar-cliente" class="btn-limpar-cliente"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 </div>
@@ -649,14 +649,14 @@
                     <div class="checkbox-wrapper" style="padding: 15px;">
                         <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" />
                         <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: var(--text-light); flex: 1;">
-                            ➕ Criar novo cliente
+                            <i class="fas fa-user-plus"></i> Criar novo cliente
                         </label>
                     </div>
                 </div>
             </div>
 
             <div id="novo-cliente-form" class="conditional-section" style="display: none;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);">📝 Dados do Novo Cliente</h3>
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-file-alt"></i> Dados do Novo Cliente</h3>
                 <div class="form-row">
                     <div class="form-group">
                         {{ cliente_form.nome.label_tag }}
@@ -787,11 +787,11 @@
         <!-- Botões de Ação -->
         <div class="form-actions">
             {% if ambiente %}
-                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back">← Voltar</a>
+                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
             {% else %}
-                <a href="{% url 'home' %}" class="btn-back">← Voltar</a>
+                <a href="{% url 'home' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
             {% endif %}
-            <button type="submit" class="btn-submit">✓ Salvar Atividade</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Salvar Atividade</button>
         </div>
     </form>
 </div>
@@ -833,7 +833,7 @@
     async function buscarClientes(query = '') {
         try {
             // Mostrar indicador de carregamento
-            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: rgba(163, 204, 171, 0.7); cursor: default; text-align: center; padding: 20px 14px;">⏳ Carregando...</div>';
+            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: rgba(163, 204, 171, 0.7); cursor: default; text-align: center; padding: 20px 14px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
             resultsDropdown.classList.add('visible');
             
             const url = query 

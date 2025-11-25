@@ -130,7 +130,7 @@
                             <td>{{ atividade.data_prevista|date:"d/m/Y" }}</td>
                             <td>
                                 <span class="{% if atividade.is_paga %}paga{% else %}nao-paga{% endif %}">
-                                    {% if atividade.is_paga %}✓ Paga{% else %}✗ Não Paga{% endif %}
+                                    {% if atividade.is_paga %}<i class="fas fa-check-circle"></i> Paga{% else %}<i class="fas fa-times-circle"></i> Não Paga{% endif %}
                                 </span>
                             </td>
                             <td>{{ atividade.ambiente.nome }}</td>

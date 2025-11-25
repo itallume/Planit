@@ -133,7 +133,7 @@
         
         <!-- Seção de Atividade -->
         <div class="section">
-            <h2>📋 Informações da Atividade</h2>
+            <h2><i class="fas fa-clipboard-list"></i> Informações da Atividade</h2>
             <div class="campo">
                 <div class="label">Descrição:</div>
                 <div class="valor">{{ atividade.descricao }}</div>
@@ -171,7 +171,7 @@
                     <div class="label">Paga:</div>
                     <div class="valor">
                         <span class="{% if atividade.is_paga %}paga{% else %}nao-paga{% endif %}">
-                            {% if atividade.is_paga %}✓ Paga{% else %}✗ Não Paga{% endif %}
+                            {% if atividade.is_paga %}<i class="fas fa-check-circle"></i> Paga{% else %}<i class="fas fa-times-circle"></i> Não Paga{% endif %}
                         </span>
                     </div>
                 </div>
@@ -185,7 +185,7 @@
         <!-- Seção de Cliente -->
         {% if cliente %}
         <div class="section">
-            <h2>👤 Informações do Cliente</h2>
+            <h2><i class="fas fa-user"></i> Informações do Cliente</h2>
             <div class="campo">
                 <div class="label">Nome:</div>
                 <div class="valor">{{ cliente.nome }}</div>
@@ -208,7 +208,7 @@
         
         <!-- Seção de Endereços -->
         <div class="section">
-            <h2>📍 Endereços</h2>
+            <h2><i class="fas fa-map-marker-alt"></i> Endereços</h2>
             {% if enderecos %}
                 {% for endereco in enderecos %}
                     <div class="item-list">
@@ -226,13 +226,13 @@
         
         <!-- Seção de Referências -->
         <div class="section">
-            <h2>📎 Referências Visuais</h2>
+            <h2><i class="fas fa-paperclip"></i> Referências Visuais</h2>
             {% if referencias %}
                 {% for referencia in referencias %}
                     <div class="item-list">
                         <strong>{{ referencia.tipo }}</strong> - {{ referencia.nome_arquivo }}<br>
                         {% if referencia.arquivo %}
-                            <a href="{{ referencia.arquivo.url }}" target="_blank">📥 Download</a>
+                            <a href="{{ referencia.arquivo.url }}" target="_blank"><i class="fas fa-download"></i> Download</a>
                         {% endif %}
                     </div>
                 {% endfor %}

@@ -409,8 +409,8 @@
                     <div class="activity-info">
                         <div class="activity-description">{{ atividade.descricao|truncatewords:15 }}</div>
                         <div class="activity-meta">
-                            <span>⏰ {{ atividade.hora_prevista|date:"H:i" }}</span>
-                            <span>💰 R$ {{ atividade.valor|floatformat:2 }}</span>
+                            <span><i class="far fa-clock"></i> {{ atividade.hora_prevista|date:"H:i" }}</span>
+                            <span><i class="fas fa-dollar-sign"></i> R$ {{ atividade.valor|floatformat:2 }}</span>
                             <span class="status-badge {% if atividade.status == 'Concluído' %}status-completed{% elif atividade.status == 'Atrasado' %}status-delayed{% else %}status-pending{% endif %}">
                                 {{ atividade.status }}
                             </span>
