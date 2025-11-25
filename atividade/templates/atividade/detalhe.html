@@ -245,7 +245,7 @@
         <div class="section actions">
             <a href="{% url 'editar_atividade' atividade.id %}" class="btn btn-edit">Editar</a>
             <a href="{% url 'deletar_atividade' atividade.id %}" class="btn btn-delete">Excluir</a>
-            <a href="{% url 'lista_atividades' %}" class="btn btn-voltar">Voltar</a>
+            <a href="{% url 'atividades_por_ambiente' ambiente_id %}" class="btn btn-voltar">Voltar</a>
         </div>
     </div>
 {% endblock %}

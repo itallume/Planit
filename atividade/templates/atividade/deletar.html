@@ -90,7 +90,7 @@
                 {% csrf_token %}
                 <button type="submit" class="btn-delete">Confirmar Exclusão</button>
             </form>
-            <a href="{% url 'lista_atividades' %}"><button type="button" class="btn-cancelar">Cancelar</button></a>
+            <a href="{% url 'atividades_por_ambiente' ambiente_id %}"><button type="button" class="btn-cancelar">Cancelar</button></a>
         </div>
     </div>
 {% endblock %}

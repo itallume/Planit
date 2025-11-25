@@ -81,6 +81,8 @@ class AtividadeDetailView(DetailView):
             context['enderecos'] = atividade.cliente.endereco_set.all()
         else:
             context['enderecos'] = []
+        # Passar o ambiente_id para o template poder voltar para a página correta
+        context['ambiente_id'] = atividade.ambiente.id
         return context
 
 
@@ -157,12 +159,22 @@ class AtividadeCreateView(CreateView):
                 return self.form_invalid(form)
         elif criar_novo:
             # Novo cliente será criado
-            if not cliente_form.is_valid() or not endereco_formset.is_valid():
+            # Validar formulário de cliente primeiro
+            if not cliente_form.is_valid():
                 return self.form_invalid(form)
             
+            # Salvar cliente primeiro
             if cliente_form.cleaned_data.get('nome'):
                 cliente = cliente_form.save()
+                
+                # Agora atribuir instância e validar endereços
                 endereco_formset.instance = cliente
+                if not endereco_formset.is_valid():
+                    # Se endereços inválidos, deletar cliente criado para manter consistência
+                    cliente.delete()
+                    return self.form_invalid(form)
+                
+                # Salvar endereços
                 endereco_formset.save()
         
         # Salvar atividade
@@ -211,6 +223,8 @@ class AtividadeUpdateView(UpdateView):
             context['referencia_formset'] = ReferenciaFormSet(instance=atividade, prefix='referencia')
         
         context['atividade'] = atividade
+        # Passar o ambiente para o template poder voltar para a página correta
+        context['ambiente'] = atividade.ambiente
         return context
     
     def form_valid(self, form):
@@ -237,12 +251,22 @@ class AtividadeUpdateView(UpdateView):
                 return self.form_invalid(form)
         elif criar_novo:
             # Novo cliente ou atualizar cliente existente
-            if not cliente_form.is_valid() or not endereco_formset.is_valid():
+            # Validar formulário de cliente primeiro
+            if not cliente_form.is_valid():
                 return self.form_invalid(form)
             
+            # Salvar cliente primeiro
             if cliente_form.cleaned_data.get('nome'):
                 cliente = cliente_form.save()
+                
+                # Agora atribuir instância e validar endereços
                 endereco_formset.instance = cliente
+                if not endereco_formset.is_valid():
+                    # Se endereços inválidos, deletar cliente criado para manter consistência
+                    cliente.delete()
+                    return self.form_invalid(form)
+                
+                # Salvar endereços
                 endereco_formset.save()
         
         # Salvar atividade
@@ -266,5 +290,17 @@ class AtividadeDeleteView(DeleteView):
     context_object_name = 'atividade'
     pk_url_kwarg = 'atividade_id'
     success_url = reverse_lazy('lista_atividades')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        atividade = self.get_object()
+        # Passar o ambiente_id para o template poder voltar para a página correta
+        context['ambiente_id'] = atividade.ambiente.id
+        return context
+    
+    def get_success_url(self):
+        # Redirecionar para a página de atividades do ambiente após exclusão
+        atividade = self.get_object()
+        return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': atividade.ambiente.id})
 
 

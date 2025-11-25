@@ -25,27 +25,28 @@
     .form-header {
         margin-bottom: 40px;
         padding-bottom: 20px;
-        border-bottom: 3px solid #4f8cff;
+        border-bottom: 2px solid rgba(163, 204, 171, 0.2);
     }
 
     .form-header h1 {
         margin: 0;
-        color: #fff;
+        color: var(--text-light);
         font-size: 28px;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .form-header p {
         margin: 5px 0 0 0;
-        color: #aaa;
+        color: var(--green-light);
         font-size: 14px;
+        opacity: 0.9;
     }
 
     .tabs-container {
         display: flex;
         gap: 0;
         margin-bottom: 30px;
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid rgba(163, 204, 171, 0.2);
         flex-wrap: wrap;
     }
 
@@ -53,7 +54,7 @@
         padding: 15px 25px;
         background: transparent;
         border: none;
-        color: #999;
+        color: rgba(163, 204, 171, 0.6);
         cursor: pointer;
         font-size: 15px;
         font-weight: 500;
@@ -63,12 +64,12 @@
     }
 
     .tab-btn:hover {
-        color: #4f8cff;
+        color: var(--green-light);
     }
 
     .tab-btn.active {
-        color: #4f8cff;
-        border-bottom-color: #4f8cff;
+        color: var(--primary-orange);
+        border-bottom-color: var(--primary-orange);
     }
 
     .tab-content {
@@ -86,17 +87,17 @@
     }
 
     .form-section {
-        background: linear-gradient(135deg, #1e2329 0%, #292c35 100%);
+        background: #1a1a16;
         padding: 25px;
         border-radius: 10px;
         margin-bottom: 20px;
-        border: 1px solid #3a3f49;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(163, 204, 171, 0.15);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     }
 
     .form-section h3 {
         margin: 0 0 20px 0;
-        color: #4f8cff;
+        color: var(--green-light);
         font-size: 16px;
         font-weight: 600;
         text-transform: uppercase;
@@ -110,7 +111,7 @@
     .form-group label {
         display: block;
         margin-bottom: 8px;
-        color: #ddd;
+        color: var(--text-light);
         font-weight: 500;
         font-size: 14px;
     }
@@ -120,10 +121,10 @@
     .form-group textarea {
         width: 100%;
         padding: 12px 14px;
-        border: 1px solid #444;
+        border: 1px solid rgba(163, 204, 171, 0.2);
         border-radius: 6px;
-        background: #181a20;
-        color: #ddd;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
         font-family: inherit;
         font-size: 14px;
         transition: all 0.3s ease;
@@ -140,9 +141,9 @@
     .form-group select:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: #4f8cff;
-        background: #1f2228;
-        box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+        border-color: var(--green-medium);
+        background: rgba(163, 204, 171, 0.1);
+        box-shadow: 0 0 0 3px rgba(52, 103, 92, 0.2);
     }
 
     .form-group textarea {
@@ -169,9 +170,9 @@
         display: flex;
         align-items: center;
         padding: 12px;
-        background: #181a20;
+        background: rgba(163, 204, 171, 0.05);
         border-radius: 6px;
-        border: 1px solid #444;
+        border: 1px solid rgba(163, 204, 171, 0.2);
     }
 
     .checkbox-wrapper input[type="checkbox"] {
@@ -179,13 +180,13 @@
         margin: 0;
         margin-right: 12px;
         cursor: pointer;
-        accent-color: #4f8cff;
+        accent-color: var(--primary-orange);
     }
 
     .checkbox-wrapper label {
         margin: 0;
         cursor: pointer;
-        color: #ddd;
+        color: var(--text-light);
     }
 
     .radio-group {
@@ -199,16 +200,16 @@
         display: flex;
         align-items: center;
         padding: 14px;
-        background: #181a20;
-        border: 2px solid #444;
+        background: rgba(163, 204, 171, 0.05);
+        border: 2px solid rgba(163, 204, 171, 0.2);
         border-radius: 6px;
         cursor: pointer;
         transition: all 0.3s ease;
     }
 
     .radio-option:hover {
-        border-color: #4f8cff;
-        background: #1f2228;
+        border-color: var(--green-light);
+        background: rgba(163, 204, 171, 0.1);
     }
 
     .radio-option input[type="radio"] {
@@ -217,7 +218,7 @@
         margin: 0 !important;
         margin-right: 12px !important;
         cursor: pointer !important;
-        accent-color: #4f8cff !important;
+        accent-color: var(--primary-orange) !important;
         flex-shrink: 0;
         padding: 0 !important;
         border: none !important;
@@ -227,22 +228,22 @@
     .radio-option span {
         margin: 0;
         cursor: pointer;
-        color: #ddd;
+        color: var(--text-light);
         flex: 1;
         font-size: 14px;
         font-weight: 500;
     }
 
     .radio-option input[type="radio"]:checked + span {
-        color: #4f8cff;
+        color: var(--primary-orange);
         font-weight: 600;
     }
 
     .conditional-section {
         padding: 20px;
-        background: #23262f;
+        background: rgba(163, 204, 171, 0.05);
         border-radius: 6px;
-        border: 1px solid #3a3f49;
+        border: 1px solid rgba(163, 204, 171, 0.15);
         display: none;
     }
 
@@ -257,10 +258,10 @@
     }
 
     .formset-item {
-        background: #181a20;
+        background: rgba(163, 204, 171, 0.05);
         padding: 20px;
         border-radius: 6px;
-        border: 1px solid #3a3f49;
+        border: 1px solid rgba(163, 204, 171, 0.15);
         position: relative;
     }
 
@@ -278,7 +279,7 @@
         gap: 10px;
         margin-top: 15px;
         padding-top: 15px;
-        border-top: 1px solid #3a3f49;
+        border-top: 1px solid rgba(163, 204, 171, 0.2);
     }
 
     .formset-item .delete-row input[type="checkbox"] {
@@ -286,7 +287,7 @@
     }
 
     .btn-remove {
-        background: #d9534f;
+        background: var(--status-delayed);
         color: white;
         padding: 8px 16px;
         border: none;
@@ -298,11 +299,12 @@
     }
 
     .btn-remove:hover {
-        background: #c9302c;
+        opacity: 0.8;
+        transform: translateY(-1px);
     }
 
     .btn-add {
-        background: #4f8cff;
+        background: var(--green-medium);
         color: white;
         padding: 12px 20px;
         border: none;
@@ -315,9 +317,9 @@
     }
 
     .btn-add:hover {
-        background: #3d6dd0;
+        opacity: 0.9;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(79, 140, 255, 0.3);
+        box-shadow: 0 4px 12px rgba(52, 103, 92, 0.3);
     }
 
     .form-actions {
@@ -326,11 +328,11 @@
         gap: 12px;
         margin-top: 40px;
         padding-top: 20px;
-        border-top: 1px solid #3a3f49;
+        border-top: 1px solid rgba(163, 204, 171, 0.2);
     }
 
     .btn-submit {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        background: var(--primary-orange);
         color: white;
         padding: 14px 40px;
         border: none;
@@ -339,18 +341,20 @@
         font-size: 15px;
         font-weight: 600;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(242, 104, 0, 0.3);
     }
 
     .btn-submit:hover {
+        opacity: 0.9;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        box-shadow: 0 6px 20px rgba(242, 104, 0, 0.4);
     }
 
     .btn-back {
-        background: #444;
-        color: white;
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
         padding: 14px 40px;
-        border: none;
         border-radius: 6px;
         cursor: pointer;
         font-size: 15px;
@@ -362,7 +366,7 @@
     }
 
     .btn-back:hover {
-        background: #555;
+        background: rgba(163, 204, 171, 0.2);
         transform: translateY(-2px);
     }
 
@@ -372,10 +376,10 @@
 
     .alert-info {
         padding: 15px;
-        background: #2a3f4a;
-        border-left: 4px solid #17a2b8;
+        background: rgba(163, 204, 171, 0.1);
+        border-left: 4px solid var(--green-light);
         border-radius: 4px;
-        color: #79c0d4;
+        color: var(--green-light);
         font-size: 14px;
     }
 
@@ -391,10 +395,10 @@
     .cliente-search-input {
         width: 100%;
         padding: 12px 14px;
-        border: 2px solid #444;
+        border: 2px solid rgba(163, 204, 171, 0.2);
         border-radius: 6px;
-        background: #181a20;
-        color: #ddd;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
         font-family: inherit;
         font-size: 14px;
         transition: all 0.3s ease;
@@ -402,13 +406,13 @@
 
     .cliente-search-input:focus {
         outline: none;
-        border-color: #4f8cff;
-        background: #1f2228;
-        box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+        border-color: var(--green-medium);
+        background: rgba(163, 204, 171, 0.1);
+        box-shadow: 0 0 0 3px rgba(52, 103, 92, 0.2);
     }
 
     .cliente-search-input::placeholder {
-        color: #666;
+        color: rgba(163, 204, 171, 0.5);
     }
 
     .cliente-results-dropdown {
@@ -416,8 +420,8 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: #181a20;
-        border: 1px solid #444;
+        background: #1a1a16;
+        border: 1px solid rgba(163, 204, 171, 0.3);
         border-top: none;
         border-radius: 0 0 6px 6px;
         max-height: 300px;
@@ -432,17 +436,17 @@
     }
 
     .cliente-results-dropdown::-webkit-scrollbar-track {
-        background: #2a2e37;
+        background: rgba(163, 204, 171, 0.1);
         border-radius: 3px;
     }
 
     .cliente-results-dropdown::-webkit-scrollbar-thumb {
-        background: #4f8cff;
+        background: var(--green-medium);
         border-radius: 3px;
     }
 
     .cliente-results-dropdown::-webkit-scrollbar-thumb:hover {
-        background: #3d6dd0;
+        background: var(--green-light);
     }
 
     .cliente-results-dropdown.visible {
@@ -451,39 +455,39 @@
 
     .cliente-result-item {
         padding: 12px 14px;
-        border-bottom: 1px solid #2a2e37;
+        border-bottom: 1px solid rgba(163, 204, 171, 0.1);
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .cliente-result-item:hover {
-        background: #1f2228;
+        background: rgba(242, 104, 0, 0.1);
     }
 
     .cliente-result-item strong {
         display: block;
-        color: #4f8cff;
+        color: var(--primary-orange);
         margin-bottom: 3px;
         font-size: 13px;
     }
 
     .cliente-result-item small {
-        color: #999;
+        color: rgba(163, 204, 171, 0.7);
         font-size: 12px;
     }
 
     .cliente-card-selected {
-        background: linear-gradient(135deg, #1e3a3f 0%, #1f3333 100%);
-        border: 2px solid #17a2b8;
+        background: rgba(163, 204, 171, 0.1);
+        border: 2px solid var(--green-light);
         border-radius: 6px;
         padding: 15px;
-        box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+        box-shadow: 0 0 0 3px rgba(163, 204, 171, 0.1);
     }
 
     .btn-limpar-cliente {
         background: transparent;
         border: none;
-        color: #666;
+        color: rgba(163, 204, 171, 0.5);
         cursor: pointer;
         font-size: 18px;
         padding: 0;
@@ -496,8 +500,8 @@
     }
 
     .btn-limpar-cliente:hover {
-        color: #d9534f;
-        background: rgba(217, 83, 79, 0.1);
+        color: var(--status-delayed);
+        background: rgba(239, 68, 68, 0.1);
         border-radius: 4px;
     }
 
@@ -626,9 +630,9 @@
                     <div class="cliente-card-selected">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-weight: 600; color: #4f8cff; margin-bottom: 5px;">✓ Cliente Selecionado</div>
-                                <div id="cliente-nome" style="color: #ddd; font-size: 15px; margin-bottom: 3px;"></div>
-                                <div id="cliente-email" style="color: #aaa; font-size: 13px;"></div>
+                                <div style="font-weight: 600; color: var(--green-light); margin-bottom: 5px;">✓ Cliente Selecionado</div>
+                                <div id="cliente-nome" style="color: var(--text-light); font-size: 15px; margin-bottom: 3px;"></div>
+                                <div id="cliente-email" style="color: rgba(163, 204, 171, 0.7); font-size: 13px;"></div>
                             </div>
                             <button type="button" id="btn-limpar-cliente" class="btn-limpar-cliente">✕</button>
                         </div>
@@ -636,7 +640,7 @@
                 </div>
 
                 <!-- Ou Criar Novo -->
-                <div style="text-align: center; margin: 25px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
+                <div style="text-align: center; margin: 25px 0; color: rgba(163, 204, 171, 0.5); font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
                     OU
                 </div>
 
@@ -644,7 +648,7 @@
                 <div class="form-group">
                     <div class="checkbox-wrapper" style="padding: 15px;">
                         <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" />
-                        <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: #ddd; flex: 1;">
+                        <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: var(--text-light); flex: 1;">
                             ➕ Criar novo cliente
                         </label>
                     </div>
@@ -652,7 +656,7 @@
             </div>
 
             <div id="novo-cliente-form" class="conditional-section" style="display: none;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; color: #4f8cff;">📝 Dados do Novo Cliente</h3>
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);">📝 Dados do Novo Cliente</h3>
                 <div class="form-row">
                     <div class="form-group">
                         {{ cliente_form.nome.label_tag }}
@@ -782,7 +786,11 @@
 
         <!-- Botões de Ação -->
         <div class="form-actions">
-            <a href="{% url 'lista_atividades' %}" class="btn-back">← Voltar</a>
+            {% if ambiente %}
+                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back">← Voltar</a>
+            {% else %}
+                <a href="{% url 'home' %}" class="btn-back">← Voltar</a>
+            {% endif %}
             <button type="submit" class="btn-submit">✓ Salvar Atividade</button>
         </div>
     </form>
@@ -825,7 +833,7 @@
     async function buscarClientes(query = '') {
         try {
             // Mostrar indicador de carregamento
-            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: #999; cursor: default; text-align: center; padding: 20px 14px;">⏳ Carregando...</div>';
+            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: rgba(163, 204, 171, 0.7); cursor: default; text-align: center; padding: 20px 14px;">⏳ Carregando...</div>';
             resultsDropdown.classList.add('visible');
             
             const url = query 
@@ -836,7 +844,7 @@
             const clientes = await response.json();
             
             if (clientes.length === 0) {
-                resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: #999; cursor: default;">Nenhum cliente encontrado</div>';
+                resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: rgba(163, 204, 171, 0.7); cursor: default;">Nenhum cliente encontrado</div>';
             } else {
                 resultsDropdown.innerHTML = clientes.map(cliente => `
                     <div class="cliente-result-item" data-id="${cliente.id}" data-nome="${cliente.nome}" data-email="${cliente.email}">
@@ -856,7 +864,7 @@
             resultsDropdown.classList.add('visible');
         } catch (error) {
             console.error('Erro ao buscar clientes:', error);
-            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: #d9534f; cursor: default;">Erro ao carregar clientes</div>';
+            resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: var(--status-delayed); cursor: default;">Erro ao carregar clientes</div>';
         }
     }
     
