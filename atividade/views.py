@@ -82,7 +82,10 @@ class AtividadeDetailView(DetailView):
         else:
             context['enderecos'] = []
         # Passar o ambiente_id para o template poder voltar para a página correta
-        context['ambiente_id'] = atividade.ambiente.id
+        if atividade.ambiente:
+            context['ambiente_id'] = atividade.ambiente.id
+        else:
+            context['ambiente_id'] = None
         return context
 
 
