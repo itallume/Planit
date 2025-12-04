@@ -23,7 +23,11 @@ class ClienteForm(forms.ModelForm):
         widgets = {
             'sobre': forms.Textarea(attrs={'rows': 3}),
         }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Tornar todos os campos opcionais quando usado em conjunto com atividade
+        for field_name in self.fields:
+            self.fields[field_name].required = False
 
 class EnderecoForm(forms.ModelForm):
     class Meta:

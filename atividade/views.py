@@ -149,7 +149,7 @@ class AtividadeCreateView(CreateView):
             return self.form_invalid(form)
         
         # Processar cliente - pode vir do campo cliente (já preenchido via JS) ou do formulário novo
-        cliente_id = self.request.POST.get('cliente') or self.request.POST.get('cliente-id-hidden')
+        cliente_id = self.request.POST.get('cliente')
         criar_novo = self.request.POST.get('criar-novo-cliente')
         cliente = None
         
@@ -245,7 +245,7 @@ class AtividadeUpdateView(UpdateView):
             return self.form_invalid(form)
         
         # Processar cliente
-        cliente_id = self.request.POST.get('cliente') or self.request.POST.get('cliente-id-hidden')
+        cliente_id = self.request.POST.get('cliente')
         criar_novo = self.request.POST.get('criar-novo-cliente')
         cliente = None
         

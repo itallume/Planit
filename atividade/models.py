@@ -14,7 +14,7 @@ class Atividade(models.Model):
     data_criacao = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pendente")
     ambiente = models.ForeignKey('ambiente.Ambiente', on_delete=models.CASCADE)
-    descricao = models.TextField()
+    descricao = models.TextField(blank=True, null=True)
     cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

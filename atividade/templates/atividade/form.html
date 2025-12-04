@@ -546,7 +546,6 @@
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="hidden" id="cliente-id-hidden" name="cliente" value="">
         {{ atividade_form.cliente }}
 
         <!-- TAB 1: Atividade -->
@@ -866,7 +865,7 @@
     const clienteEmail = document.getElementById('cliente-email');
     const novoClienteForm = document.getElementById('novo-cliente-form');
     const criarNovoCheckbox = document.getElementById('criar-novo-cliente');
-    const clienteField = document.querySelector('input[name="cliente"]');
+    const clienteField = document.getElementById('id_cliente');
     const btnLimparCliente = document.getElementById('btn-limpar-cliente');
 
     let clienteSelecionadoId = null;
@@ -938,7 +937,6 @@
     function selecionarCliente(id, nome, email) {
         clienteSelecionadoId = id;
         clienteField.value = id;
-        document.getElementById('cliente-id-hidden').value = id;
         clienteNome.textContent = nome;
         clienteEmail.textContent = email;
         clienteSelecionado.style.display = 'block';
@@ -946,6 +944,7 @@
         searchInput.value = '';
         criarNovoCheckbox.checked = false;
         novoClienteForm.classList.remove('visible');
+        novoClienteForm.style.display = 'none';
     }
 
     // Limpar cliente selecionado
@@ -953,7 +952,6 @@
         e.preventDefault();
         clienteSelecionadoId = null;
         clienteField.value = '';
-        document.getElementById('cliente-id-hidden').value = '';
         clienteSelecionado.style.display = 'none';
         searchInput.value = '';
     });
@@ -965,7 +963,7 @@
             novoClienteForm.style.display = 'block';
             clienteSelecionado.style.display = 'none';
             clienteField.value = '';
-            document.getElementById('cliente-id-hidden').value = '';
+            clienteSelecionadoId = null;
             searchInput.value = '';
         } else {
             novoClienteForm.classList.remove('visible');
