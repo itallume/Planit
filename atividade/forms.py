@@ -28,6 +28,23 @@ class ClienteForm(forms.ModelForm):
         # Tornar todos os campos opcionais quando usado em conjunto com atividade
         for field_name in self.fields:
             self.fields[field_name].required = False
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            return email
+        
+        # Se estamos editando uma instância existente, verificar se o email mudou
+        if self.instance and self.instance.pk:
+            # Se o email não mudou, não validar unicidade
+            if email == self.instance.email:
+                return email
+        
+        # Verificar se email já existe
+        if Cliente.objects.filter(email=email).exclude(pk=self.instance.pk if self.instance else None).exists():
+            raise forms.ValidationError('Cliente com este Email já existe.')
+        
+        return email
 
 class EnderecoForm(forms.ModelForm):
     class Meta:

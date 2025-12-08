@@ -607,7 +607,7 @@
         <!-- TAB 2: Cliente -->
         <div id="tab-cliente" class="tab-content">
             <div class="form-section">
-                <h3>Selecionar ou Criar Cliente</h3>
+                <h3>Selecionar Cliente</h3>
                 
                 <!-- Campo de Busca -->
                 <div class="form-group">
@@ -617,45 +617,28 @@
                             type="text" 
                             id="cliente-search" 
                             class="cliente-search-input" 
-                            placeholder="Digite o nome ou email do cliente..." 
+                            placeholder="Digite o nome ou email do cliente ou deixe em branco para criar novo..." 
                             autocomplete="off"
                         />
                         <div id="cliente-results" class="cliente-results-dropdown"></div>
                     </div>
                 </div>
 
-                <!-- Cliente Selecionado (Hidden) -->
-                <div id="cliente-selecionado" style="display: none; margin-bottom: 20px;">
-                    <div class="cliente-card-selected">
+                <!-- Cliente Selecionado (Info) -->
+                <div id="cliente-selecionado-info" style="display: none; margin-bottom: 20px;">
+                    <div style="background: rgba(163, 204, 171, 0.1); border-left: 4px solid var(--green-light); padding: 12px; border-radius: 4px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 600; color: var(--green-light); margin-bottom: 5px;"><i class="fas fa-check-circle"></i> Cliente Selecionado</div>
-                                <div id="cliente-nome" style="color: var(--text-light); font-size: 15px; margin-bottom: 3px;"></div>
-                                <div id="cliente-email" style="color: rgba(163, 204, 171, 0.7); font-size: 13px;"></div>
+                            <div style="color: var(--green-light); font-size: 13px;">
+                                <i class="fas fa-info-circle"></i> <span id="cliente-info-text">Editando cliente existente</span>
                             </div>
                             <button type="button" id="btn-limpar-cliente" class="btn-limpar-cliente"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Ou Criar Novo -->
-                <div style="text-align: center; margin: 25px 0; color: rgba(163, 204, 171, 0.5); font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
-                    OU
-                </div>
-
-                <!-- Checkbox para Criar Novo Cliente -->
-                <div class="form-group">
-                    <div class="checkbox-wrapper" style="padding: 15px;">
-                        <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" {% if request.POST|length > 0 and 'criar-novo-cliente' in request.POST %}checked{% endif %} />
-                        <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: var(--text-light); flex: 1;">
-                            <i class="fas fa-user-plus"></i> Criar novo cliente
-                        </label>
-                    </div>
-                </div>
             </div>
 
-            <div id="novo-cliente-form" class="conditional-section" style="display: none;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-file-alt"></i> Dados do Novo Cliente</h3>
+            <div id="cliente-form-section" class="conditional-section visible" style="display: block;">
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-user-edit"></i> Dados do Cliente</h3>
                 
                 {% if cliente_form.errors %}
                 <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
@@ -860,15 +843,35 @@
     // Sistema de Busca de Cliente
     const searchInput = document.getElementById('cliente-search');
     const resultsDropdown = document.getElementById('cliente-results');
-    const clienteSelecionado = document.getElementById('cliente-selecionado');
-    const clienteNome = document.getElementById('cliente-nome');
-    const clienteEmail = document.getElementById('cliente-email');
-    const novoClienteForm = document.getElementById('novo-cliente-form');
-    const criarNovoCheckbox = document.getElementById('criar-novo-cliente');
+    const clienteSelecionadoInfo = document.getElementById('cliente-selecionado-info');
+    const clienteInfoText = document.getElementById('cliente-info-text');
+    const clienteFormSection = document.getElementById('cliente-form-section');
     const clienteField = document.getElementById('id_cliente');
     const btnLimparCliente = document.getElementById('btn-limpar-cliente');
+    
+    // Campos do formulário de cliente
+    const clienteNomeInput = document.getElementById('id_cliente-nome');
+    const clienteEmailInput = document.getElementById('id_cliente-email');
+    const clienteTelefoneInput = document.getElementById('id_cliente-telefone');
+    const clienteSobreInput = document.getElementById('id_cliente-sobre');
 
     let clienteSelecionadoId = null;
+    let clienteOriginalData = null;
+
+    // Verificar se já existe um cliente selecionado (modo edição)
+    {% if atividade.cliente %}
+    clienteSelecionadoId = {{ atividade.cliente.id }};
+    clienteField.value = {{ atividade.cliente.id }};
+    clienteOriginalData = {
+        id: {{ atividade.cliente.id }},
+        nome: "{{ atividade.cliente.nome|escapejs }}",
+        email: "{{ atividade.cliente.email|escapejs }}",
+        telefone: "{{ atividade.cliente.telefone|escapejs }}",
+        sobre: "{{ atividade.cliente.sobre|escapejs }}"
+    };
+    clienteInfoText.textContent = 'Editando: {{ atividade.cliente.nome|escapejs }}';
+    clienteSelecionadoInfo.style.display = 'block';
+    {% endif %}
 
     // Debounce para busca
     let searchTimeout;
@@ -899,7 +902,7 @@
                 // Adicionar event listeners aos itens
                 document.querySelectorAll('.cliente-result-item[data-id]').forEach(item => {
                     item.addEventListener('click', () => {
-                        selecionarCliente(item.dataset.id, item.dataset.nome, item.dataset.email);
+                        carregarDadosCliente(item.dataset.id);
                     });
                 });
             }
@@ -908,6 +911,110 @@
         } catch (error) {
             console.error('Erro ao buscar clientes:', error);
             resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: var(--status-delayed); cursor: default;">Erro ao carregar clientes</div>';
+        }
+    }
+    
+    async function carregarDadosCliente(clienteId) {
+        try {
+            // Buscar dados completos do cliente via API
+            const response = await fetch(`/atividade/api/buscar-clientes/`);
+            const clientes = await response.json();
+            const cliente = clientes.find(c => c.id == clienteId);
+            
+            if (cliente) {
+                // Preencher formulário com dados do cliente
+                clienteNomeInput.value = cliente.nome || '';
+                clienteEmailInput.value = cliente.email || '';
+                clienteTelefoneInput.value = cliente.telefone || '';
+                clienteSobreInput.value = cliente.sobre || '';
+                
+                // Armazenar ID do cliente
+                clienteSelecionadoId = cliente.id;
+                clienteField.value = cliente.id;
+                
+                // Armazenar dados originais
+                clienteOriginalData = {
+                    id: cliente.id,
+                    nome: cliente.nome,
+                    email: cliente.email,
+                    telefone: cliente.telefone,
+                    sobre: cliente.sobre
+                };
+                
+                // Mostrar info de cliente selecionado
+                clienteInfoText.textContent = `Editando: ${cliente.nome}`;
+                clienteSelecionadoInfo.style.display = 'block';
+                
+                // Fechar dropdown e limpar busca
+                resultsDropdown.classList.remove('visible');
+                searchInput.value = '';
+                
+                // Carregar endereços do cliente
+                await carregarEnderecosCliente(cliente.id);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do cliente:', error);
+        }
+    }
+    
+    async function carregarEnderecosCliente(clienteId) {
+        try {
+            const response = await fetch(`/atividade/api/cliente/${clienteId}/enderecos/`);
+            const enderecos = await response.json();
+            
+            // Limpar endereços existentes
+            const container = document.getElementById('enderecos-container');
+            container.innerHTML = '';
+            
+            // Atualizar contadores de forms
+            const totalFormsInput = document.getElementById('id_endereco-TOTAL_FORMS');
+            const initialFormsInput = document.getElementById('id_endereco-INITIAL_FORMS');
+            
+            totalFormsInput.value = enderecos.length;
+            initialFormsInput.value = enderecos.length;
+            
+            // Adicionar cada endereço ao formset
+            enderecos.forEach((endereco, index) => {
+                adicionarEnderecoAoFormset(endereco, index);
+            });
+            
+        } catch (error) {
+            console.error('Erro ao carregar endereços do cliente:', error);
+        }
+    }
+    
+    function adicionarEnderecoAoFormset(endereco, index) {
+        const container = document.getElementById('enderecos-container');
+        const template = document.getElementById('endereco-prototype');
+        
+        // Criar HTML do formulário substituindo __prefix__
+        let html = template.innerHTML.replace(/__prefix__/g, index).replace(/__index__/g, index);
+        
+        // Inserir no container
+        container.insertAdjacentHTML('beforeend', html);
+        
+        // Agora preencher os valores dos campos que foram inseridos no DOM
+        const ruaInput = document.querySelector(`[name="endereco-${index}-rua"]`);
+        const cidadeInput = document.querySelector(`[name="endereco-${index}-cidade"]`);
+        const estadoInput = document.querySelector(`[name="endereco-${index}-estado"]`);
+        const cepInput = document.querySelector(`[name="endereco-${index}-cep"]`);
+        const complementoInput = document.querySelector(`[name="endereco-${index}-complemento"]`);
+        
+        if (ruaInput) ruaInput.value = endereco.rua || '';
+        if (cidadeInput) cidadeInput.value = endereco.cidade || '';
+        if (estadoInput) estadoInput.value = endereco.estado || '';
+        if (cepInput) cepInput.value = endereco.cep || '';
+        if (complementoInput) complementoInput.value = endereco.complemento || '';
+        
+        // Adicionar campo hidden com ID do endereço se existir (para atualização)
+        if (endereco.id) {
+            const lastFormItem = container.lastElementChild;
+            const hiddenId = document.createElement('input');
+            hiddenId.type = 'hidden';
+            hiddenId.name = `endereco-${index}-id`;
+            hiddenId.id = `id_endereco-${index}-id`;
+            hiddenId.value = endereco.id;
+            lastFormItem.appendChild(hiddenId);
         }
     }
     
@@ -929,53 +1036,40 @@
 
     // Mostrar todos os clientes ao focar no input
     searchInput.addEventListener('focus', async (e) => {
-        if (e.target.value.trim().length === 0 && !clienteSelecionadoId) {
+        if (e.target.value.trim().length === 0) {
             await buscarClientes('');
         }
     });
 
-    function selecionarCliente(id, nome, email) {
-        clienteSelecionadoId = id;
-        clienteField.value = id;
-        clienteNome.textContent = nome;
-        clienteEmail.textContent = email;
-        clienteSelecionado.style.display = 'block';
-        resultsDropdown.classList.remove('visible');
-        searchInput.value = '';
-        criarNovoCheckbox.checked = false;
-        novoClienteForm.classList.remove('visible');
-        novoClienteForm.style.display = 'none';
-    }
-
     // Limpar cliente selecionado
     btnLimparCliente.addEventListener('click', (e) => {
         e.preventDefault();
+        
+        // Limpar campos do formulário
+        clienteNomeInput.value = '';
+        clienteEmailInput.value = '';
+        clienteTelefoneInput.value = '';
+        clienteSobreInput.value = '';
+        
+        // Limpar variáveis de controle
         clienteSelecionadoId = null;
+        clienteOriginalData = null;
         clienteField.value = '';
-        clienteSelecionado.style.display = 'none';
+        
+        // Esconder info
+        clienteSelecionadoInfo.style.display = 'none';
+        
+        // Limpar busca
         searchInput.value = '';
+        
+        // Limpar endereços
+        const container = document.getElementById('enderecos-container');
+        container.innerHTML = '';
+        const totalFormsInput = document.getElementById('id_endereco-TOTAL_FORMS');
+        const initialFormsInput = document.getElementById('id_endereco-INITIAL_FORMS');
+        totalFormsInput.value = 0;
+        initialFormsInput.value = 0;
     });
-
-    // Checkbox para criar novo cliente
-    criarNovoCheckbox.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            novoClienteForm.classList.add('visible');
-            novoClienteForm.style.display = 'block';
-            clienteSelecionado.style.display = 'none';
-            clienteField.value = '';
-            clienteSelecionadoId = null;
-            searchInput.value = '';
-        } else {
-            novoClienteForm.classList.remove('visible');
-            novoClienteForm.style.display = 'none';
-        }
-    });
-    
-    // Verificar se o checkbox está marcado no carregamento (após erro de validação)
-    if (criarNovoCheckbox.checked) {
-        novoClienteForm.classList.add('visible');
-        novoClienteForm.style.display = 'block';
-    }
 
     // Fechar dropdown ao clicar fora
     document.addEventListener('click', (e) => {
