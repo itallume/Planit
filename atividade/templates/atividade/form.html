@@ -1423,6 +1423,25 @@
 
     initFormset('endereco', 'add-endereco', 'enderecos-container', 'endereco-prototype');
     initFormset('referencia', 'add-referencia', 'referencias-container', 'referencia-prototype');
+
+    // Máscara de telefone
+    const telefoneInput = document.getElementById('id_cliente-telefone');
+    if (telefoneInput) {
+        telefoneInput.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '').substring(0, 11);
+            if (v.length <= 2) e.target.value = v.length > 0 ? `(${v}` : '';
+            else if (v.length <= 6) e.target.value = `(${v.substring(0, 2)}) ${v.substring(2)}`;
+            else e.target.value = v.length <= 10 ? `(${v.substring(0, 2)}) ${v.substring(2, 6)}-${v.substring(6)}` : `(${v.substring(0, 2)}) ${v.substring(2, 7)}-${v.substring(7)}`;
+        });
+    }
+
+    // Máscara de CEP
+    document.addEventListener('input', function(e) {
+        if (e.target.name && e.target.name.endsWith('-cep')) {
+            let value = e.target.value.replace(/\D/g, '').substring(0, 8);
+            e.target.value = value.length > 5 ? `${value.substring(0, 5)}-${value.substring(5)}` : value;
+        }
+    });
 })();
 </script>
 {% endblock %}
