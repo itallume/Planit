@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 from django.db.models import Q
 from datetime import timedelta
-from .models import Atividade, Cliente
+import os
+import mimetypes
+from .models import Atividade, Cliente, Referencia
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
 import json
@@ -347,5 +349,33 @@ class AtividadeDeleteView(DeleteView):
         # Redirecionar para a página de atividades do ambiente após exclusão
         atividade = self.get_object()
         return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': atividade.ambiente.id})
+
+
+def download_referencia(request, referencia_id: int):
+    referencia = get_object_or_404(Referencia, id=referencia_id)
+    if not referencia.arquivo:
+        raise Http404("Arquivo não encontrado")
+
+    original_name = os.path.basename(referencia.arquivo.name)
+    base, ext = os.path.splitext(original_name)
+    desired_name = (referencia.nome_arquivo or '').strip()
+
+    if desired_name:
+        # If a custom name is provided, ensure it has the original extension
+        if not os.path.splitext(desired_name)[1] and ext:
+            filename = desired_name + ext
+        else:
+            filename = desired_name
+    else:
+        # Fallback to stored filename with extension
+        filename = original_name
+
+    content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+    return FileResponse(
+        referencia.arquivo.open('rb'),
+        as_attachment=True,
+        filename=filename,
+        content_type=content_type,
+    )
 
 
