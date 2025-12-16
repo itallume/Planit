@@ -13,7 +13,24 @@ class AtividadeForm(forms.ModelForm):
             'hora_prevista': forms.TimeInput(attrs={'type': 'time'}),
             'descricao': forms.Textarea(attrs={'rows': 4}),
             'cliente': forms.HiddenInput(),
+            'status': forms.RadioSelect(),
         }
+        labels = {
+            'status': 'Status da atividade',
+            'is_paga': 'Atividade paga',
+        }
+    
+    def clean_valor(self):
+        valor = self.cleaned_data.get('valor')
+        if valor is not None and valor < 0:
+            raise forms.ValidationError('O valor não pode ser negativo.')
+        return valor
+    
+    def clean_valor_recebido(self):
+        valor_recebido = self.cleaned_data.get('valor_recebido')
+        if valor_recebido is not None and valor_recebido < 0:
+            raise forms.ValidationError('O valor recebido não pode ser negativo.')
+        return valor_recebido
 
 
 class ClienteForm(forms.ModelForm):

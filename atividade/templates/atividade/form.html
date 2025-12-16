@@ -239,6 +239,58 @@
         font-weight: 600;
     }
 
+    /* Status & Pagamento - neutral, accessible styling */
+    .status-payment-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .status-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .status-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1px solid rgba(163, 204, 171, 0.25);
+        border-radius: 6px;
+        background: rgba(163, 204, 171, 0.06);
+        color: var(--text-light);
+    }
+    .status-option input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--green-medium);
+    }
+    .status-option:hover {
+        border-color: rgba(163, 204, 171, 0.4);
+        background: rgba(163, 204, 171, 0.1);
+    }
+    .status-option input[type="radio"]:checked + span {
+        font-weight: 600;
+    }
+
+    .payment-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid rgba(163, 204, 171, 0.25);
+        border-radius: 6px;
+        background: rgba(163, 204, 171, 0.06);
+        color: var(--text-light);
+        cursor: pointer;
+        user-select: none;
+    }
+    .payment-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--green-medium);
+    }
+
     .conditional-section {
         padding: 20px;
         background: rgba(163, 204, 171, 0.05);
@@ -564,10 +616,20 @@
                     <div class="form-group">
                         {{ atividade_form.valor.label_tag }}
                         {{ atividade_form.valor }}
+                        {% if atividade_form.valor.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ atividade_form.valor.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         {{ atividade_form.valor_recebido.label_tag }}
                         {{ atividade_form.valor_recebido }}
+                        {% if atividade_form.valor_recebido.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ atividade_form.valor_recebido.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -588,17 +650,24 @@
 
             <div class="form-section">
                 <h3>Status e Pagamento</h3>
-                <div class="form-row">
+                <div class="status-payment-row">
                     <div class="form-group">
-                        {{ atividade_form.status.label_tag }}
-                        {{ atividade_form.status }}
+                        <label>{{ atividade_form.status.label }}</label>
+                        <div class="status-group" style="margin-top: 6px;">
+                            {% for choice in atividade_form.status %}
+                            <label class="status-option">
+                                {{ choice.tag }}
+                                <span>{{ choice.choice_label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>&nbsp;</label>
-                        <div class="checkbox-wrapper">
+                        <label>Pagamento</label>
+                        <label class="payment-checkbox" for="{{ atividade_form.is_paga.id_for_label }}">
                             {{ atividade_form.is_paga }}
-                            {{ atividade_form.is_paga.label_tag }}
-                        </div>
+                            <span>Atividade paga</span>
+                        </label>
                     </div>
                 </div>
             </div>
