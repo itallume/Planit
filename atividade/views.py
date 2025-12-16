@@ -13,6 +13,7 @@ from ambiente.models import Ambiente
 import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .mixins import AmbientePermissionMixin
 
 @login_required
 def buscar_clientes(request):
@@ -35,7 +36,7 @@ def buscar_enderecos_cliente(request, cliente_id):
     )
     return JsonResponse(list(enderecos), safe=False)
 
-class AtividadesPorAmbienteView(LoginRequiredMixin,ListView):
+class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, ListView):
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
@@ -72,7 +73,7 @@ class AtividadesPorAmbienteView(LoginRequiredMixin,ListView):
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         return context
 
-class AtividadeDetailView(LoginRequiredMixin, DetailView):
+class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, DetailView):
     model = Atividade
     template_name = 'atividade/detalhe.html'
     context_object_name = 'atividade'
@@ -94,7 +95,7 @@ class AtividadeDetailView(LoginRequiredMixin, DetailView):
             context['ambiente_id'] = None
         return context
 
-class AtividadeCreateView(LoginRequiredMixin, CreateView):
+class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
@@ -225,7 +226,7 @@ class AtividadeCreateView(LoginRequiredMixin, CreateView):
         context = self.get_context_data(form=form)
         return self.render_to_response(context)
 
-class AtividadeUpdateView(LoginRequiredMixin, UpdateView):
+class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
@@ -344,7 +345,7 @@ class AtividadeUpdateView(LoginRequiredMixin, UpdateView):
         print(f"Referencia formset errors: {context['referencia_formset'].errors}")
         return self.render_to_response(context)
 
-class AtividadeDeleteView(LoginRequiredMixin, DeleteView):
+class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, DeleteView):
     model = Atividade
     template_name = 'atividade/deletar.html'
     context_object_name = 'atividade'
