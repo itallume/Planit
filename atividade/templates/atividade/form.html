@@ -912,10 +912,11 @@
                             {% endif %}
                             <div class="form-row form-row-3">
                                 <div class="form-group">{{ form.rua.label_tag }} {{ form.rua }}</div>
+                                <div class="form-group">{{ form.numero.label_tag }} {{ form.numero }}</div>
                                 <div class="form-group">{{ form.cidade.label_tag }} {{ form.cidade }}</div>
-                                <div class="form-group">{{ form.estado.label_tag }} {{ form.estado }}</div>
                             </div>
                             <div class="form-row form-row-3">
+                                <div class="form-group">{{ form.estado.label_tag }} {{ form.estado }}</div>
                                 <div class="form-group">{{ form.cep.label_tag }} {{ form.cep }}</div>
                                 <div class="form-group">{{ form.complemento.label_tag }} {{ form.complemento }}</div>
                             </div>
@@ -935,15 +936,19 @@
                                 {{ endereco_formset.empty_form.rua }}
                             </div>
                             <div class="form-group">
+                                {{ endereco_formset.empty_form.numero.label_tag }}
+                                {{ endereco_formset.empty_form.numero }}
+                            </div>
+                            <div class="form-group">
                                 {{ endereco_formset.empty_form.cidade.label_tag }}
                                 {{ endereco_formset.empty_form.cidade }}
                             </div>
+                        </div>
+                        <div class="form-row form-row-3">
                             <div class="form-group">
                                 {{ endereco_formset.empty_form.estado.label_tag }}
                                 {{ endereco_formset.empty_form.estado }}
                             </div>
-                        </div>
-                        <div class="form-row form-row-3">
                             <div class="form-group">
                                 {{ endereco_formset.empty_form.cep.label_tag }}
                                 {{ endereco_formset.empty_form.cep }}
@@ -1440,6 +1445,14 @@
         if (e.target.name && e.target.name.endsWith('-cep')) {
             let value = e.target.value.replace(/\D/g, '').substring(0, 8);
             e.target.value = value.length > 5 ? `${value.substring(0, 5)}-${value.substring(5)}` : value;
+        }
+        // Nome, Rua, Cidade, Estado: apenas letras, espaços e acentos
+        if (e.target.name && (e.target.name.endsWith('-nome') || e.target.name.endsWith('-rua') || e.target.name.endsWith('-cidade') || e.target.name.endsWith('-estado'))) {
+            e.target.value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+        }
+        // Numero: apenas números
+        if (e.target.name && e.target.name.endsWith('-numero')) {
+            e.target.value = e.target.value.replace(/\D/g, '');
         }
     });
 })();

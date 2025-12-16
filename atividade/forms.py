@@ -72,7 +72,7 @@ class ClienteForm(forms.ModelForm):
 class EnderecoForm(forms.ModelForm):
     class Meta:
         model = Endereco
-        fields = ['rua', 'cidade', 'estado', 'cep', 'complemento']
+        fields = ['rua', 'numero', 'cidade', 'estado', 'cep', 'complemento']
 
 
 class ReferenciaForm(forms.ModelForm):

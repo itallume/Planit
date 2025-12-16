@@ -44,6 +44,7 @@ class Cliente(models.Model):
 
 class Endereco(models.Model):
     rua = models.CharField(max_length=200)
+    numero = models.CharField(max_length=20, blank=True, null=True)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=100)
     cep = models.CharField(max_length=20)
