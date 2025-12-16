@@ -128,8 +128,8 @@ LOGIN_URL = 'signin'
 LOGIN_REDIRECT_URL = 'lista_ambientes'
 
 # Media files (user uploads)
-MEDIA_URL = '/referencias/'
-MEDIA_ROOT = BASE_DIR / 'referencias'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
