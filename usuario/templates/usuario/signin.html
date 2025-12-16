@@ -1,0 +1,232 @@
+{% extends "global/base.html" %}
+
+{% block titulo %}Login - Planit{% endblock %}
+
+{% block content %}
+<style>
+    .signin-container {
+        max-width: 450px;
+        margin: 100px auto;
+        padding: 40px;
+        background: #1a1a16;
+        border-radius: 12px;
+        border: 1px solid rgba(163, 204, 171, 0.2);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .signin-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .signin-header h1 {
+        margin: 0 0 10px 0;
+        color: var(--text-light);
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .signin-header .logo-accent {
+        color: var(--primary-orange);
+    }
+
+    .signin-header p {
+        margin: 0;
+        color: var(--green-light);
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-light);
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid rgba(163, 204, 171, 0.2);
+        border-radius: 8px;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
+        font-family: inherit;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--green-medium);
+        background: rgba(163, 204, 171, 0.1);
+        box-shadow: 0 0 0 3px rgba(52, 103, 92, 0.2);
+    }
+
+    .form-group input::placeholder {
+        color: rgba(163, 204, 171, 0.5);
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 3px solid var(--status-delayed);
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        color: var(--status-delayed);
+        font-size: 13px;
+    }
+
+    .error-message ul {
+        margin: 8px 0 0 0;
+        padding-left: 20px;
+    }
+
+    .error-message li {
+        margin: 4px 0;
+    }
+
+    .field-error {
+        color: var(--status-delayed);
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: var(--primary-orange);
+        color: white;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(242, 104, 0, 0.3);
+        margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(242, 104, 0, 0.4);
+    }
+
+    .signup-link {
+        text-align: center;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(163, 204, 171, 0.15);
+        color: rgba(163, 204, 171, 0.7);
+        font-size: 14px;
+    }
+
+    .signup-link a {
+        color: var(--primary-orange);
+        text-decoration: none;
+        font-weight: 600;
+        transition: opacity 0.3s ease;
+    }
+
+    .signup-link a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+
+    .forgot-password {
+        text-align: right;
+        margin-top: 8px;
+    }
+
+    .forgot-password a {
+        color: var(--green-light);
+        text-decoration: none;
+        font-size: 13px;
+        transition: opacity 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+
+    .welcome-message {
+        background: rgba(163, 204, 171, 0.1);
+        border-left: 3px solid var(--green-light);
+        padding: 12px 14px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        color: var(--green-light);
+        font-size: 14px;
+    }
+
+    @media (max-width: 576px) {
+        .signin-container {
+            margin: 40px 20px;
+            padding: 30px 20px;
+        }
+    }
+</style>
+
+<div class="signin-container">
+    <div class="signin-header">
+        <h1><i class="fas fa-sign-in-alt"></i> Bem-vindo ao <span class="logo-accent">Planit</span></h1>
+        <p>Entre com sua conta para continuar</p>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="error-message">
+        <strong><i class="fas fa-exclamation-circle"></i> Erro ao fazer login:</strong>
+        <ul>
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_username"><i class="fas fa-user"></i> Nome de usuário</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                {% for error in form.username.errors %}
+                    <span class="field-error"><i class="fas fa-exclamation-triangle"></i> {{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password"><i class="fas fa-lock"></i> Senha</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                {% for error in form.password.errors %}
+                    <span class="field-error"><i class="fas fa-exclamation-triangle"></i> {{ error }}</span>
+                {% endfor %}
+            {% endif %}
+            <div class="forgot-password">
+                <a href="#"><i class="fas fa-question-circle"></i> Esqueceu sua senha?</a>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+    </form>
+
+    <div class="signup-link">
+        Não tem uma conta? <a href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Cadastre-se</a>
+    </div>
+</div>
+
+{% endblock %}

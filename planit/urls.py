@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('ambiente/', include('ambiente.urls')),
     path('atividade/', include('atividade.urls')),
+    path('', include('usuario.urls')),
 ]
 
 # Serve user-uploaded media files in development, ver dps isso
