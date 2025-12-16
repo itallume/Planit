@@ -3,10 +3,11 @@ from django.shortcuts import render, redirect
 from ambiente.forms import AmbienteForm
 from ambiente.models import Ambiente
 from django.db.models import Count, Q
-
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 class AmbienteView:
+    @login_required
     def lista_ambientes(request):
         ambientes = Ambiente.objects.annotate(
             num_atividades=Count('atividade'),
@@ -17,6 +18,7 @@ class AmbienteView:
         form = AmbienteForm()
         return render(request, 'ambiente/home.html', {'ambientes': ambientes, 'form': form})
     
+    @login_required
     def detalhe_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         atividades = ambiente.atividade_set.all()
@@ -25,6 +27,7 @@ class AmbienteView:
             'atividades': atividades
         })
     
+    @login_required
     def criar_ambiente(request):
         if request.method == 'POST':
             form = AmbienteForm(request.POST)
@@ -43,6 +46,7 @@ class AmbienteView:
         # Se acessar diretamente, redireciona para lista
         return redirect('lista_ambientes')
     
+    @login_required
     def editar_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         if request.method == 'POST':
@@ -77,12 +81,12 @@ class AmbienteView:
             'ambiente_editar_id': ambiente.id
         })
     
+    @login_required
     def deletar_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         if request.method == 'POST':
             ambiente.delete()
             return redirect('lista_ambientes')
-        # GET: não renderiza nada, apenas redireciona (o modal é aberto via JS)
         return redirect('lista_ambientes')
     
     

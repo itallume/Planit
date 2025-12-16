@@ -11,8 +11,10 @@ from .models import Atividade, Cliente, Referencia
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
 import json
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
+@login_required
 def buscar_clientes(request):
     """API para buscar clientes por nome ou email"""
     query = request.GET.get('q', '').strip()
@@ -24,6 +26,7 @@ def buscar_clientes(request):
     clientes = clientes.values('id', 'nome', 'email', 'telefone', 'sobre')[:limit]
     return JsonResponse(list(clientes), safe=False)
 
+@login_required
 def buscar_enderecos_cliente(request, cliente_id):
     """API para buscar endereços de um cliente específico"""
     from .models import Endereco
@@ -32,7 +35,7 @@ def buscar_enderecos_cliente(request, cliente_id):
     )
     return JsonResponse(list(enderecos), safe=False)
 
-class AtividadesPorAmbienteView(ListView):
+class AtividadesPorAmbienteView(LoginRequiredMixin,ListView):
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
@@ -69,8 +72,7 @@ class AtividadesPorAmbienteView(ListView):
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         return context
 
-
-class AtividadeDetailView(DetailView):
+class AtividadeDetailView(LoginRequiredMixin, DetailView):
     model = Atividade
     template_name = 'atividade/detalhe.html'
     context_object_name = 'atividade'
@@ -92,8 +94,7 @@ class AtividadeDetailView(DetailView):
             context['ambiente_id'] = None
         return context
 
-
-class AtividadeCreateView(CreateView):
+class AtividadeCreateView(LoginRequiredMixin, CreateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
@@ -220,8 +221,7 @@ class AtividadeCreateView(CreateView):
         
         return redirect(self.get_success_url())
 
-
-class AtividadeUpdateView(UpdateView):
+class AtividadeUpdateView(LoginRequiredMixin, UpdateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
@@ -330,8 +330,7 @@ class AtividadeUpdateView(UpdateView):
         
         return redirect(self.get_success_url())
 
-
-class AtividadeDeleteView(DeleteView):
+class AtividadeDeleteView(LoginRequiredMixin, DeleteView):
     model = Atividade
     template_name = 'atividade/deletar.html'
     context_object_name = 'atividade'
@@ -350,7 +349,7 @@ class AtividadeDeleteView(DeleteView):
         atividade = self.get_object()
         return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': atividade.ambiente.id})
 
-
+@login_required
 def download_referencia(request, referencia_id: int):
     referencia = get_object_or_404(Referencia, id=referencia_id)
     if not referencia.arquivo:
