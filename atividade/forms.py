@@ -37,6 +37,17 @@ class AtividadeForm(forms.ModelForm):
         if valor_recebido is not None and valor_recebido < 0:
             raise forms.ValidationError('O valor recebido não pode ser negativo.')
         return valor_recebido
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        valor = cleaned_data.get('valor')
+        valor_recebido = cleaned_data.get('valor_recebido')
+        
+        if valor is not None and valor_recebido is not None:
+            if valor_recebido > valor:
+                raise forms.ValidationError('O valor recebido não pode ser maior que o valor total.')
+        
+        return cleaned_data
 
 
 class ClienteForm(forms.ModelForm):
