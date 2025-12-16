@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 
 STATUS_CHOICES = [
     ("Pendente", "Pendente"),
@@ -24,7 +24,10 @@ class Atividade(models.Model):
 class Referencia(models.Model):
     tipo = models.CharField(max_length=100)
     nome_arquivo = models.CharField(max_length=200)
-    arquivo = models.FileField(upload_to='referencias/')
+    arquivo = models.FileField(
+        upload_to='referencias/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])]
+    )
     atividade = models.ForeignKey(Atividade, on_delete=models.CASCADE)
 
     def __str__(self):

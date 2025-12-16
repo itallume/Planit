@@ -837,14 +837,48 @@
         <div id="tab-referencias" class="tab-content">
             <div class="form-section">
                 <h3>Referências Visuais</h3>
+                
+                {% if referencia_formset.non_form_errors %}
+                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+                    <strong style="color: var(--status-delayed);">Erros nas referências:</strong>
+                    <div style="margin-top: 8px; color: var(--status-delayed);">
+                        {{ referencia_formset.non_form_errors }}
+                    </div>
+                </div>
+                {% endif %}
+                
                 {{ referencia_formset.management_form }}
                 <div id="referencias-container" class="formset-container">
                     {% for form in referencia_formset %}
                         <div class="formset-item" data-form-index="{{ forloop.counter0 }}">
                             <div class="form-row form-row-3">
-                                <div class="form-group">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
-                                <div class="form-group">{{ form.nome_arquivo.label_tag }} {{ form.nome_arquivo }}</div>
-                                <div class="form-group">{{ form.arquivo.label_tag }} {{ form.arquivo }}</div>
+                                <div class="form-group">
+                                    {{ form.tipo.label_tag }} 
+                                    {{ form.tipo }}
+                                    {% if form.tipo.errors %}
+                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                            {{ form.tipo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.nome_arquivo.label_tag }} 
+                                    {{ form.nome_arquivo }}
+                                    {% if form.nome_arquivo.errors %}
+                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                            {{ form.nome_arquivo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.arquivo.label_tag }} 
+                                    {{ form.arquivo }}
+                                    {% if form.arquivo.errors %}
+                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                            {{ form.arquivo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="delete-row">
                                 {{ form.DELETE }}

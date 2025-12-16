@@ -73,6 +73,17 @@ class ReferenciaForm(forms.ModelForm):
     class Meta:
         model = Referencia
         fields = ['tipo', 'nome_arquivo', 'arquivo']
+    
+    def clean_arquivo(self):
+        arquivo = self.cleaned_data.get('arquivo')
+        if arquivo:
+            extensao = arquivo.name.split('.')[-1].lower()
+            extensoes_permitidas = ['pdf', 'jpg', 'jpeg', 'png']
+            if extensao not in extensoes_permitidas:
+                raise forms.ValidationError(
+                    f'Tipo de arquivo não permitido. Use apenas: {", ".join(extensoes_permitidas).upper()}'
+                )
+        return arquivo
 
 
 # Formsets
