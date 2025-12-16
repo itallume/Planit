@@ -23,9 +23,18 @@
     }
 
     .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 40px;
         padding-bottom: 20px;
         border-bottom: 2px solid rgba(163, 204, 171, 0.2);
+        gap: 20px;
+    }
+
+    .form-header-content {
+        flex: 1;
+        text-align: center;
     }
 
     .form-header h1 {
@@ -40,6 +49,28 @@
         color: var(--green-light);
         font-size: 14px;
         opacity: 0.9;
+    }
+
+    .btn-voltar-topo {
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .btn-voltar-topo:hover {
+        background: rgba(163, 204, 171, 0.2);
+        transform: translateY(-1px);
     }
 
     .tabs-container {
@@ -454,15 +485,16 @@
         cursor: pointer;
         font-size: 15px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
+        gap: 8px;
     }
 
     .btn-back:hover {
         background: rgba(163, 204, 171, 0.2);
-        transform: translateY(-2px);
+        transform: translateY(-1px);
     }
 
     .management-form {
@@ -628,8 +660,22 @@
 
 <div class="form-container">
     <div class="form-header">
-        <h1>{% if atividade %}<i class="fas fa-edit"></i> Editar Atividade{% else %}<i class="fas fa-plus-circle"></i> Nova Atividade{% endif %}</h1>
-        <p>Complete os dados da atividade abaixo</p>
+        {% if ambiente %}
+            <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-voltar-topo">
+                <i class="fas fa-arrow-left"></i>
+                Atividades
+            </a>
+        {% else %}
+            <a href="{% url 'home' %}" class="btn-voltar-topo">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        {% endif %}
+        <div class="form-header-content">
+            <h1>{% if atividade %}<i class="fas fa-edit"></i> Editar Atividade{% else %}<i class="fas fa-plus-circle"></i> Nova Atividade{% endif %}</h1>
+            <p>Complete os dados da atividade abaixo</p>
+        </div>
+        <div style="width: 180px;"></div> <!-- Spacer for symmetry -->
     </div>
 
     <div class="tabs-container">
@@ -1000,9 +1046,15 @@
         <!-- Botões de Ação -->
         <div class="form-actions">
             {% if ambiente %}
-                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Atividades
+                </a>
             {% else %}
-                <a href="{% url 'home' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <a href="{% url 'home' %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </a>
             {% endif %}
             <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Salvar Atividade</button>
         </div>
