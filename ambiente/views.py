@@ -9,7 +9,10 @@ from django.contrib.auth.decorators import login_required
 class AmbienteView:
     @login_required
     def lista_ambientes(request):
-        ambientes = Ambiente.objects.annotate(
+        # Filtrar apenas ambientes onde o usuário é administrador OU participante
+        ambientes = Ambiente.objects.filter(
+            Q(usuario_administrador=request.user) | Q(usuarios_participantes=request.user)
+        ).distinct().annotate(
             num_atividades=Count('atividade'),
             num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
             num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
@@ -38,7 +41,9 @@ class AmbienteView:
                 num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
             )
             if form.is_valid():
-                form.save()
+                ambiente = form.save(commit=False)
+                ambiente.usuario_administrador = request.user
+                ambiente.save()
                 return redirect('lista_ambientes')
             else:
                 # Renderiza home.html com o form preenchido e erros
