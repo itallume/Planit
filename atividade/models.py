@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 STATUS_CHOICES = [
     ("Pendente", "Pendente"),
@@ -6,9 +7,9 @@ STATUS_CHOICES = [
     ("Atrasado", "Atrasado"),
 ]
 class Atividade(models.Model):
-    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    valor = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     is_paga = models.BooleanField(default=False)
-    valor_recebido = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    valor_recebido = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0)])
     data_prevista = models.DateField()
     hora_prevista = models.TimeField()
     data_criacao = models.DateField(auto_now_add=True)
