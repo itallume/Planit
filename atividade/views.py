@@ -220,6 +220,10 @@ class AtividadeCreateView(LoginRequiredMixin, CreateView):
         referencia_formset.save()
         
         return redirect(self.get_success_url())
+    
+    def form_invalid(self, form):
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
 class AtividadeUpdateView(LoginRequiredMixin, UpdateView):
     model = Atividade
@@ -329,6 +333,16 @@ class AtividadeUpdateView(LoginRequiredMixin, UpdateView):
         referencia_formset.save()
         
         return redirect(self.get_success_url())
+    
+    def form_invalid(self, form):
+        """Sobrescrever para adicionar contexto de erro"""
+        print("=== FORM INVALID ===")
+        print(f"Atividade form errors: {form.errors}")
+        context = self.get_context_data(form=form)
+        print(f"Cliente form errors: {context['cliente_form'].errors}")
+        print(f"Endereco formset errors: {context['endereco_formset'].errors}")
+        print(f"Referencia formset errors: {context['referencia_formset'].errors}")
+        return self.render_to_response(context)
 
 class AtividadeDeleteView(LoginRequiredMixin, DeleteView):
     model = Atividade

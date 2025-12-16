@@ -9,8 +9,8 @@ class AtividadeForm(forms.ModelForm):
         model = Atividade
         fields = ['descricao', 'valor', 'valor_recebido', 'data_prevista', 'hora_prevista', 'status', 'is_paga', 'cliente']
         widgets = {
-            'data_prevista': forms.DateInput(attrs={'type': 'date'}),
-            'hora_prevista': forms.TimeInput(attrs={'type': 'time'}),
+            'data_prevista': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'hora_prevista': forms.TimeInput(attrs={'type': 'time'}, format='%H:%M'),
             'descricao': forms.Textarea(attrs={'rows': 4}),
             'cliente': forms.HiddenInput(),
             'status': forms.RadioSelect(),
@@ -19,6 +19,12 @@ class AtividadeForm(forms.ModelForm):
             'status': 'Status da atividade',
             'is_paga': 'Atividade paga',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Garantir que os formatos de data e hora sejam compatíveis com HTML5 inputs
+        self.fields['data_prevista'].input_formats = ['%Y-%m-%d']
+        self.fields['hora_prevista'].input_formats = ['%H:%M', '%H:%M:%S']
     
     def clean_valor(self):
         valor = self.cleaned_data.get('valor')

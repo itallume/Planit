@@ -72,6 +72,49 @@
         border-bottom-color: var(--primary-orange);
     }
 
+    .tab-btn.has-error {
+        color: var(--status-delayed);
+    }
+
+    .tab-btn.has-error.active {
+        color: var(--status-delayed);
+        border-bottom-color: var(--status-delayed);
+    }
+
+    .tab-error-badge {
+        display: inline-block;
+        margin-left: 6px;
+        width: 18px;
+        height: 18px;
+        background: var(--status-delayed);
+        border-radius: 50%;
+        position: relative;
+        top: -2px;
+        animation: pulse 2s infinite;
+    }
+
+    .tab-error-badge::before {
+        content: '!';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        50% {
+            opacity: 0.9;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+        }
+    }
+
     .tab-content {
         display: none;
         animation: fadeIn 0.3s ease;
@@ -600,6 +643,18 @@
         {% csrf_token %}
         {{ atividade_form.cliente }}
 
+        <!-- Erros Gerais do Formulário -->
+        {% if atividade_form.non_field_errors %}
+            <div style="background: var(--status-delayed); color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                <strong><i class="fas fa-exclamation-triangle"></i> Erros:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    {% for error in atividade_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         <!-- TAB 1: Atividade -->
         <div id="tab-atividade" class="tab-content active">
             <div class="form-section">
@@ -607,6 +662,11 @@
                 <div class="form-group">
                     {{ atividade_form.descricao.label_tag }}
                     {{ atividade_form.descricao }}
+                    {% if atividade_form.descricao.errors %}
+                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                            {{ atividade_form.descricao.errors }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -640,10 +700,20 @@
                     <div class="form-group">
                         {{ atividade_form.data_prevista.label_tag }}
                         {{ atividade_form.data_prevista }}
+                        {% if atividade_form.data_prevista.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ atividade_form.data_prevista.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         {{ atividade_form.hora_prevista.label_tag }}
                         {{ atividade_form.hora_prevista }}
+                        {% if atividade_form.hora_prevista.errors %}
+                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
+                                {{ atividade_form.hora_prevista.errors }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -781,6 +851,19 @@
                 <div id="enderecos-container" class="formset-container">
                     {% for form in endereco_formset %}
                         <div class="formset-item" data-form-index="{{ forloop.counter0 }}">
+                            {{ form.id }}
+                            {% if form.errors %}
+                            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                                <strong style="color: var(--status-delayed); font-size: 0.875rem;">Erros neste endereço:</strong>
+                                <ul style="margin: 5px 0 0 0; padding-left: 20px; color: var(--status-delayed); font-size: 0.875rem;">
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            <li>{{ field }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
                             <div class="form-row form-row-3">
                                 <div class="form-group">{{ form.rua.label_tag }} {{ form.rua }}</div>
                                 <div class="form-group">{{ form.cidade.label_tag }} {{ form.cidade }}</div>
@@ -851,6 +934,7 @@
                 <div id="referencias-container" class="formset-container">
                     {% for form in referencia_formset %}
                         <div class="formset-item" data-form-index="{{ forloop.counter0 }}">
+                            {{ form.id }}
                             <div class="form-row form-row-3">
                                 <div class="form-group">
                                     {{ form.tipo.label_tag }} 
@@ -931,17 +1015,91 @@
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    function switchToTab(tabId) {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(t => t.classList.remove('active'));
+
+        const targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
+        const targetContent = document.getElementById(tabId);
+        
+        if (targetBtn && targetContent) {
+            targetBtn.classList.add('active');
+            targetContent.classList.add('active');
+        }
+    }
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabId = btn.dataset.tab;
-
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(t => t.classList.remove('active'));
-
-            btn.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            switchToTab(tabId);
         });
     });
+
+    // Detectar erros e adicionar indicadores nas abas
+    function detectAndMarkErrors() {
+        const errorTabs = [];
+
+        // Verificar aba de Atividade
+        const atividadeTab = document.getElementById('tab-atividade');
+        if (atividadeTab) {
+            const hasAtividadeErrors = atividadeTab.querySelector('.errorlist, [style*="status-delayed"]') || 
+                                      document.querySelector('.form-header + [style*="status-delayed"]');
+            if (hasAtividadeErrors) {
+                errorTabs.push('tab-atividade');
+            }
+        }
+
+        // Verificar aba de Cliente
+        const clienteTab = document.getElementById('tab-cliente');
+        if (clienteTab) {
+            const hasClienteErrors = clienteTab.querySelector('.errorlist, [style*="status-delayed"]');
+            if (hasClienteErrors) {
+                errorTabs.push('tab-cliente');
+            }
+        }
+
+        // Verificar aba de Endereços
+        const enderecoTab = document.getElementById('tab-endereco');
+        if (enderecoTab) {
+            const hasEnderecoErrors = enderecoTab.querySelector('.errorlist, [style*="status-delayed"]');
+            if (hasEnderecoErrors) {
+                errorTabs.push('tab-endereco');
+            }
+        }
+
+        // Verificar aba de Referências
+        const referenciaTab = document.getElementById('tab-referencias');
+        if (referenciaTab) {
+            const hasReferenciaErrors = referenciaTab.querySelector('.errorlist, [style*="status-delayed"]');
+            if (hasReferenciaErrors) {
+                errorTabs.push('tab-referencias');
+            }
+        }
+
+        // Adicionar badges e classes de erro nas abas
+        errorTabs.forEach(tabId => {
+            const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (tabBtn) {
+                tabBtn.classList.add('has-error');
+                // Adicionar badge se ainda não existir
+                if (!tabBtn.querySelector('.tab-error-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'tab-error-badge';
+                    tabBtn.appendChild(badge);
+                }
+            }
+        });
+
+        // Mudar para a primeira aba com erro
+        if (errorTabs.length > 0) {
+            switchToTab(errorTabs[0]);
+        }
+    }
+
+    // Executar detecção de erros ao carregar a página
+    document.addEventListener('DOMContentLoaded', detectAndMarkErrors);
+    // Também executar imediatamente caso o DOM já esteja carregado
+    detectAndMarkErrors();
 
     // Sistema de Busca de Cliente
     const searchInput = document.getElementById('cliente-search');
