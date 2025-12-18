@@ -89,7 +89,7 @@ class EnderecoForm(forms.ModelForm):
 class ReferenciaForm(forms.ModelForm):
     class Meta:
         model = Referencia
-        fields = ['tipo', 'nome_arquivo', 'arquivo']
+        fields = ['nome_arquivo', 'arquivo']
     
     def clean_arquivo(self):
         arquivo = self.cleaned_data.get('arquivo')

@@ -988,15 +988,6 @@
                             {{ form.id }}
                             <div class="form-row form-row-3">
                                 <div class="form-group">
-                                    {{ form.tipo.label_tag }} 
-                                    {{ form.tipo }}
-                                    {% if form.tipo.errors %}
-                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                            {{ form.tipo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="form-group">
                                     {{ form.nome_arquivo.label_tag }} 
                                     {{ form.nome_arquivo }}
                                     {% if form.nome_arquivo.errors %}
@@ -1026,10 +1017,6 @@
                 <template id="referencia-prototype">
                     <div class="formset-item" data-form-index="__index__">
                         <div class="form-row form-row-3">
-                            <div class="form-group">
-                                {{ referencia_formset.empty_form.tipo.label_tag }}
-                                {{ referencia_formset.empty_form.tipo }}
-                            </div>
                             <div class="form-group">
                                 {{ referencia_formset.empty_form.nome_arquivo.label_tag }}
                                 {{ referencia_formset.empty_form.nome_arquivo }}

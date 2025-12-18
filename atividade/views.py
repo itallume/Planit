@@ -121,6 +121,12 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
             except Ambiente.DoesNotExist:
                 pass
         
+        # Preencher data_prevista se foi passada via GET
+        data_prevista = self.request.GET.get('data_prevista')
+        if data_prevista and 'atividade_form' in context:
+            # Pré-preencher o campo data_prevista
+            context['atividade_form'].fields['data_prevista'].initial = data_prevista
+        
         if self.request.POST:
             # Se há cliente_id no POST, carregar a instância para o formulário
             cliente_id = self.request.POST.get('cliente')

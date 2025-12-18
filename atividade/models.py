@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, FileExtensionValidator
+import os
 
 STATUS_CHOICES = [
     ("Pendente", "Pendente"),
@@ -32,6 +33,19 @@ class Referencia(models.Model):
 
     def __str__(self):
         return self.nome_arquivo
+    
+    def save(self, *args, **kwargs):
+        # Detectar tipo automaticamente baseado na extensão do arquivo
+        if self.arquivo:
+            extensao = os.path.splitext(self.arquivo.name)[1].lower().strip('.')
+            tipo_mapa = {
+                'pdf': 'PDF',
+                'jpg': 'Imagem JPG',
+                'jpeg': 'Imagem JPEG',
+                'png': 'Imagem PNG',
+            }
+            self.tipo = tipo_mapa.get(extensao, extensao.upper())
+        super().save(*args, **kwargs)
     
 class Cliente(models.Model):
     nome = models.CharField(max_length=200)
