@@ -7,34 +7,62 @@ from django.db.models import Q
 from datetime import timedelta
 import os
 import mimetypes
-from .models import Atividade, Cliente, Referencia
+from .models import Atividade, Cliente, Referencia, Endereco
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
 import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import AmbientePermissionMixin
+from rest_framework import viewsets, permissions
+from .serializers import ClienteSerializer, EnderecoSerializer
 
-@login_required
-def buscar_clientes(request):
-    """API para buscar clientes por nome ou email"""
-    query = request.GET.get('q', '').strip()
-    clientes = Cliente.objects.all().order_by('nome')
+class ClienteViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Permitir busca por nome ou email via parâmetro 'search'"""
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(Q(nome__icontains=search) | Q(email__icontains=search))
+        limit = 10 if search else 20
+        queryset = queryset.values('id', 'nome', 'email', 'telefone', 'sobre').order_by('nome')[:limit]
+        return queryset
+
+class EnderecoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = EnderecoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        cliente_id = self.kwargs.get('cliente_id')
+        return Endereco.objects.filter(cliente_id=cliente_id).values(
+            'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
+        )
+
+# @login_required
+# def buscar_clientes(request):
+#     """API para buscar clientes por nome ou email"""
+#     query = request.GET.get('q', '').strip()
+#     clientes = Cliente.objects.all().order_by('nome')
     
-    if query:
-        clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
-    limit = 10 if query else 20
-    clientes = clientes.values('id', 'nome', 'email', 'telefone', 'sobre')[:limit]
-    return JsonResponse(list(clientes), safe=False)
+#     if query:
+#         clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
+#     limit = 10 if query else 20
+#     clientes = clientes.values('id', 'nome', 'email', 'telefone', 'sobre')[:limit]
+#     return JsonResponse(list(clientes), safe=False)
 
-@login_required
-def buscar_enderecos_cliente(request, cliente_id):
-    """API para buscar endereços de um cliente específico"""
-    from .models import Endereco
-    enderecos = Endereco.objects.filter(cliente_id=cliente_id).values(
-        'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
-    )
-    return JsonResponse(list(enderecos), safe=False)
+
+
+# @login_required
+# def buscar_enderecos_cliente(request, cliente_id):
+#     """API para buscar endereços de um cliente específico"""
+#     enderecos = Endereco.objects.filter(cliente_id=cliente_id).values(
+#         'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
+#     )
+#     return JsonResponse(list(enderecos), safe=False)
 
 class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, ListView):
     model = Atividade

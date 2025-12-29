@@ -1188,8 +1188,8 @@
             resultsDropdown.classList.add('visible');
             
             const url = query 
-                ? `/atividade/api/buscar-clientes/?q=${encodeURIComponent(query)}`
-                : `/atividade/api/buscar-clientes/`;
+                ? `/api/clientes/?search=${encodeURIComponent(query)}`
+                : `/api/clientes/`;
             
             const response = await fetch(url);
             const clientes = await response.json();
@@ -1222,7 +1222,7 @@
     async function carregarDadosCliente(clienteId) {
         try {
             // Buscar dados completos do cliente via API
-            const response = await fetch(`/atividade/api/buscar-clientes/`);
+            const response = await fetch(`/api/clientes/`);
             const clientes = await response.json();
             const cliente = clientes.find(c => c.id == clienteId);
             
@@ -1264,7 +1264,7 @@
     
     async function carregarEnderecosCliente(clienteId) {
         try {
-            const response = await fetch(`/atividade/api/cliente/${clienteId}/enderecos/`);
+            const response = await fetch(`/api/clientes/${clienteId}/enderecos/`);
             const enderecos = await response.json();
             
             // Limpar endereços existentes

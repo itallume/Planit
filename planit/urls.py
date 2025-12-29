@@ -24,6 +24,7 @@ urlpatterns = [
     path('ambiente/', include('ambiente.urls')),
     path('atividade/', include('atividade.urls')),
     path('', include('usuario.urls')),
+    path('api/', include('atividade.api_urls')),
 ]
 
 # Serve user-uploaded media files in development, ver dps isso
