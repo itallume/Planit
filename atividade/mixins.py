@@ -42,3 +42,4 @@ class AmbientePermissionMixin:
         return super().dispatch(request, *args, **kwargs)
         # ajeitar
         #essa bomba desse git
+        #pq
