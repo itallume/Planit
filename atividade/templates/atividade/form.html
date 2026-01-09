@@ -23,18 +23,9 @@
     }
 
     .form-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         margin-bottom: 40px;
         padding-bottom: 20px;
         border-bottom: 2px solid rgba(163, 204, 171, 0.2);
-        gap: 20px;
-    }
-
-    .form-header-content {
-        flex: 1;
-        text-align: center;
     }
 
     .form-header h1 {
@@ -49,28 +40,6 @@
         color: var(--green-light);
         font-size: 14px;
         opacity: 0.9;
-    }
-
-    .btn-voltar-topo {
-        background: rgba(163, 204, 171, 0.1);
-        color: var(--text-light);
-        border: 1px solid rgba(163, 204, 171, 0.3);
-        padding: 12px 24px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-    }
-
-    .btn-voltar-topo:hover {
-        background: rgba(163, 204, 171, 0.2);
-        transform: translateY(-1px);
     }
 
     .tabs-container {
@@ -101,49 +70,6 @@
     .tab-btn.active {
         color: var(--primary-orange);
         border-bottom-color: var(--primary-orange);
-    }
-
-    .tab-btn.has-error {
-        color: var(--status-delayed);
-    }
-
-    .tab-btn.has-error.active {
-        color: var(--status-delayed);
-        border-bottom-color: var(--status-delayed);
-    }
-
-    .tab-error-badge {
-        display: inline-block;
-        margin-left: 6px;
-        width: 18px;
-        height: 18px;
-        background: var(--status-delayed);
-        border-radius: 50%;
-        position: relative;
-        top: -2px;
-        animation: pulse 2s infinite;
-    }
-
-    .tab-error-badge::before {
-        content: '!';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 12px;
-        font-weight: bold;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-        }
-        50% {
-            opacity: 0.9;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
-        }
     }
 
     .tab-content {
@@ -313,58 +239,6 @@
         font-weight: 600;
     }
 
-    /* Status & Pagamento - neutral, accessible styling */
-    .status-payment-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-    .status-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .status-option {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border: 1px solid rgba(163, 204, 171, 0.25);
-        border-radius: 6px;
-        background: rgba(163, 204, 171, 0.06);
-        color: var(--text-light);
-    }
-    .status-option input[type="radio"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--green-medium);
-    }
-    .status-option:hover {
-        border-color: rgba(163, 204, 171, 0.4);
-        background: rgba(163, 204, 171, 0.1);
-    }
-    .status-option input[type="radio"]:checked + span {
-        font-weight: 600;
-    }
-
-    .payment-checkbox {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px;
-        border: 1px solid rgba(163, 204, 171, 0.25);
-        border-radius: 6px;
-        background: rgba(163, 204, 171, 0.06);
-        color: var(--text-light);
-        cursor: pointer;
-        user-select: none;
-    }
-    .payment-checkbox input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--green-medium);
-    }
-
     .conditional-section {
         padding: 20px;
         background: rgba(163, 204, 171, 0.05);
@@ -485,16 +359,15 @@
         cursor: pointer;
         font-size: 15px;
         font-weight: 600;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
     }
 
     .btn-back:hover {
         background: rgba(163, 204, 171, 0.2);
-        transform: translateY(-1px);
+        transform: translateY(-2px);
     }
 
     .management-form {
@@ -660,22 +533,8 @@
 
 <div class="form-container">
     <div class="form-header">
-        {% if ambiente %}
-            <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-voltar-topo">
-                <i class="fas fa-arrow-left"></i>
-                Atividades
-            </a>
-        {% else %}
-            <a href="{% url 'home' %}" class="btn-voltar-topo">
-                <i class="fas fa-arrow-left"></i>
-                Voltar
-            </a>
-        {% endif %}
-        <div class="form-header-content">
-            <h1>{% if atividade %}<i class="fas fa-edit"></i> Editar Atividade{% else %}<i class="fas fa-plus-circle"></i> Nova Atividade{% endif %}</h1>
-            <p>Complete os dados da atividade abaixo</p>
-        </div>
-        <div style="width: 180px;"></div> <!-- Spacer for symmetry -->
+        <h1>{% if atividade %}<i class="fas fa-edit"></i> Editar Atividade{% else %}<i class="fas fa-plus-circle"></i> Nova Atividade{% endif %}</h1>
+        <p>Complete os dados da atividade abaixo</p>
     </div>
 
     <div class="tabs-container">
@@ -687,19 +546,8 @@
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" id="cliente-id-hidden" name="cliente" value="">
         {{ atividade_form.cliente }}
-
-        <!-- Erros Gerais do Formulário -->
-        {% if atividade_form.non_field_errors %}
-            <div style="background: var(--status-delayed); color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-                <strong><i class="fas fa-exclamation-triangle"></i> Erros:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    {% for error in atividade_form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
 
         <!-- TAB 1: Atividade -->
         <div id="tab-atividade" class="tab-content active">
@@ -708,11 +556,6 @@
                 <div class="form-group">
                     {{ atividade_form.descricao.label_tag }}
                     {{ atividade_form.descricao }}
-                    {% if atividade_form.descricao.errors %}
-                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                            {{ atividade_form.descricao.errors }}
-                        </div>
-                    {% endif %}
                 </div>
             </div>
 
@@ -722,20 +565,10 @@
                     <div class="form-group">
                         {{ atividade_form.valor.label_tag }}
                         {{ atividade_form.valor }}
-                        {% if atividade_form.valor.errors %}
-                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                {{ atividade_form.valor.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                     <div class="form-group">
                         {{ atividade_form.valor_recebido.label_tag }}
                         {{ atividade_form.valor_recebido }}
-                        {% if atividade_form.valor_recebido.errors %}
-                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                {{ atividade_form.valor_recebido.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -746,44 +579,27 @@
                     <div class="form-group">
                         {{ atividade_form.data_prevista.label_tag }}
                         {{ atividade_form.data_prevista }}
-                        {% if atividade_form.data_prevista.errors %}
-                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                {{ atividade_form.data_prevista.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                     <div class="form-group">
                         {{ atividade_form.hora_prevista.label_tag }}
                         {{ atividade_form.hora_prevista }}
-                        {% if atividade_form.hora_prevista.errors %}
-                            <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                {{ atividade_form.hora_prevista.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="form-section">
                 <h3>Status e Pagamento</h3>
-                <div class="status-payment-row">
+                <div class="form-row">
                     <div class="form-group">
-                        <label>{{ atividade_form.status.label }}</label>
-                        <div class="status-group" style="margin-top: 6px;">
-                            {% for choice in atividade_form.status %}
-                            <label class="status-option">
-                                {{ choice.tag }}
-                                <span>{{ choice.choice_label }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
+                        {{ atividade_form.status.label_tag }}
+                        {{ atividade_form.status }}
                     </div>
                     <div class="form-group">
-                        <label>Pagamento</label>
-                        <label class="payment-checkbox" for="{{ atividade_form.is_paga.id_for_label }}">
+                        <label>&nbsp;</label>
+                        <div class="checkbox-wrapper">
                             {{ atividade_form.is_paga }}
-                            <span>Atividade paga</span>
-                        </label>
+                            {{ atividade_form.is_paga.label_tag }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -792,7 +608,7 @@
         <!-- TAB 2: Cliente -->
         <div id="tab-cliente" class="tab-content">
             <div class="form-section">
-                <h3>Selecionar Cliente</h3>
+                <h3>Selecionar ou Criar Cliente</h3>
                 
                 <!-- Campo de Busca -->
                 <div class="form-group">
@@ -802,28 +618,45 @@
                             type="text" 
                             id="cliente-search" 
                             class="cliente-search-input" 
-                            placeholder="Digite o nome ou email do cliente ou deixe em branco para criar novo..." 
+                            placeholder="Digite o nome ou email do cliente..." 
                             autocomplete="off"
                         />
                         <div id="cliente-results" class="cliente-results-dropdown"></div>
                     </div>
                 </div>
 
-                <!-- Cliente Selecionado (Info) -->
-                <div id="cliente-selecionado-info" style="display: none; margin-bottom: 20px;">
-                    <div style="background: rgba(163, 204, 171, 0.1); border-left: 4px solid var(--green-light); padding: 12px; border-radius: 4px;">
+                <!-- Cliente Selecionado (Hidden) -->
+                <div id="cliente-selecionado" style="display: none; margin-bottom: 20px;">
+                    <div class="cliente-card-selected">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="color: var(--green-light); font-size: 13px;">
-                                <i class="fas fa-info-circle"></i> <span id="cliente-info-text">Editando cliente existente</span>
+                            <div>
+                                <div style="font-weight: 600; color: var(--green-light); margin-bottom: 5px;"><i class="fas fa-check-circle"></i> Cliente Selecionado</div>
+                                <div id="cliente-nome" style="color: var(--text-light); font-size: 15px; margin-bottom: 3px;"></div>
+                                <div id="cliente-email" style="color: rgba(163, 204, 171, 0.7); font-size: 13px;"></div>
                             </div>
                             <button type="button" id="btn-limpar-cliente" class="btn-limpar-cliente"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 </div>
+
+                <!-- Ou Criar Novo -->
+                <div style="text-align: center; margin: 25px 0; color: rgba(163, 204, 171, 0.5); font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">
+                    OU
+                </div>
+
+                <!-- Checkbox para Criar Novo Cliente -->
+                <div class="form-group">
+                    <div class="checkbox-wrapper" style="padding: 15px;">
+                        <input type="checkbox" id="criar-novo-cliente" name="criar-novo-cliente" {% if request.POST|length > 0 and 'criar-novo-cliente' in request.POST %}checked{% endif %} />
+                        <label for="criar-novo-cliente" style="margin: 0; cursor: pointer; color: var(--text-light); flex: 1;">
+                            <i class="fas fa-user-plus"></i> Criar novo cliente
+                        </label>
+                    </div>
+                </div>
             </div>
 
-            <div id="cliente-form-section" class="conditional-section visible" style="display: block;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-user-edit"></i> Dados do Cliente</h3>
+            <div id="novo-cliente-form" class="conditional-section" style="display: none;">
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--green-light);"><i class="fas fa-file-alt"></i> Dados do Novo Cliente</h3>
                 
                 {% if cliente_form.errors %}
                 <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
@@ -897,26 +730,12 @@
                 <div id="enderecos-container" class="formset-container">
                     {% for form in endereco_formset %}
                         <div class="formset-item" data-form-index="{{ forloop.counter0 }}">
-                            {{ form.id }}
-                            {% if form.errors %}
-                            <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 10px; margin-bottom: 15px; border-radius: 4px;">
-                                <strong style="color: var(--status-delayed); font-size: 0.875rem;">Erros neste endereço:</strong>
-                                <ul style="margin: 5px 0 0 0; padding-left: 20px; color: var(--status-delayed); font-size: 0.875rem;">
-                                    {% for field, errors in form.errors.items %}
-                                        {% for error in errors %}
-                                            <li>{{ field }}: {{ error }}</li>
-                                        {% endfor %}
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
                             <div class="form-row form-row-3">
                                 <div class="form-group">{{ form.rua.label_tag }} {{ form.rua }}</div>
-                                <div class="form-group">{{ form.numero.label_tag }} {{ form.numero }}</div>
                                 <div class="form-group">{{ form.cidade.label_tag }} {{ form.cidade }}</div>
+                                <div class="form-group">{{ form.estado.label_tag }} {{ form.estado }}</div>
                             </div>
                             <div class="form-row form-row-3">
-                                <div class="form-group">{{ form.estado.label_tag }} {{ form.estado }}</div>
                                 <div class="form-group">{{ form.cep.label_tag }} {{ form.cep }}</div>
                                 <div class="form-group">{{ form.complemento.label_tag }} {{ form.complemento }}</div>
                             </div>
@@ -936,19 +755,15 @@
                                 {{ endereco_formset.empty_form.rua }}
                             </div>
                             <div class="form-group">
-                                {{ endereco_formset.empty_form.numero.label_tag }}
-                                {{ endereco_formset.empty_form.numero }}
-                            </div>
-                            <div class="form-group">
                                 {{ endereco_formset.empty_form.cidade.label_tag }}
                                 {{ endereco_formset.empty_form.cidade }}
                             </div>
-                        </div>
-                        <div class="form-row form-row-3">
                             <div class="form-group">
                                 {{ endereco_formset.empty_form.estado.label_tag }}
                                 {{ endereco_formset.empty_form.estado }}
                             </div>
+                        </div>
+                        <div class="form-row form-row-3">
                             <div class="form-group">
                                 {{ endereco_formset.empty_form.cep.label_tag }}
                                 {{ endereco_formset.empty_form.cep }}
@@ -971,40 +786,14 @@
         <div id="tab-referencias" class="tab-content">
             <div class="form-section">
                 <h3>Referências Visuais</h3>
-                
-                {% if referencia_formset.non_form_errors %}
-                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--status-delayed); padding: 12px; margin-bottom: 20px; border-radius: 4px;">
-                    <strong style="color: var(--status-delayed);">Erros nas referências:</strong>
-                    <div style="margin-top: 8px; color: var(--status-delayed);">
-                        {{ referencia_formset.non_form_errors }}
-                    </div>
-                </div>
-                {% endif %}
-                
                 {{ referencia_formset.management_form }}
                 <div id="referencias-container" class="formset-container">
                     {% for form in referencia_formset %}
                         <div class="formset-item" data-form-index="{{ forloop.counter0 }}">
-                            {{ form.id }}
                             <div class="form-row form-row-3">
-                                <div class="form-group">
-                                    {{ form.nome_arquivo.label_tag }} 
-                                    {{ form.nome_arquivo }}
-                                    {% if form.nome_arquivo.errors %}
-                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                            {{ form.nome_arquivo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="form-group">
-                                    {{ form.arquivo.label_tag }} 
-                                    {{ form.arquivo }}
-                                    {% if form.arquivo.errors %}
-                                        <div style="color: var(--status-delayed); font-size: 0.875rem; margin-top: 4px;">
-                                            {{ form.arquivo.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                <div class="form-group">{{ form.tipo.label_tag }} {{ form.tipo }}</div>
+                                <div class="form-group">{{ form.nome_arquivo.label_tag }} {{ form.nome_arquivo }}</div>
+                                <div class="form-group">{{ form.arquivo.label_tag }} {{ form.arquivo }}</div>
                             </div>
                             <div class="delete-row">
                                 {{ form.DELETE }}
@@ -1017,6 +806,10 @@
                 <template id="referencia-prototype">
                     <div class="formset-item" data-form-index="__index__">
                         <div class="form-row form-row-3">
+                            <div class="form-group">
+                                {{ referencia_formset.empty_form.tipo.label_tag }}
+                                {{ referencia_formset.empty_form.tipo }}
+                            </div>
                             <div class="form-group">
                                 {{ referencia_formset.empty_form.nome_arquivo.label_tag }}
                                 {{ referencia_formset.empty_form.nome_arquivo }}
@@ -1038,15 +831,9 @@
         <!-- Botões de Ação -->
         <div class="form-actions">
             {% if ambiente %}
-                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i>
-                    Atividades
-                </a>
+                <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
             {% else %}
-                <a href="{% url 'home' %}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar
-                </a>
+                <a href="{% url 'home' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</a>
             {% endif %}
             <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Salvar Atividade</button>
         </div>
@@ -1059,124 +846,30 @@
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    function switchToTab(tabId) {
-        tabBtns.forEach(b => b.classList.remove('active'));
-        tabContents.forEach(t => t.classList.remove('active'));
-
-        const targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
-        const targetContent = document.getElementById(tabId);
-        
-        if (targetBtn && targetContent) {
-            targetBtn.classList.add('active');
-            targetContent.classList.add('active');
-        }
-    }
-
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabId = btn.dataset.tab;
-            switchToTab(tabId);
+
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(t => t.classList.remove('active'));
+
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         });
     });
-
-    // Detectar erros e adicionar indicadores nas abas
-    function detectAndMarkErrors() {
-        const errorTabs = [];
-
-        // Verificar aba de Atividade
-        const atividadeTab = document.getElementById('tab-atividade');
-        if (atividadeTab) {
-            const hasAtividadeErrors = atividadeTab.querySelector('.errorlist, [style*="status-delayed"]') || 
-                                      document.querySelector('.form-header + [style*="status-delayed"]');
-            if (hasAtividadeErrors) {
-                errorTabs.push('tab-atividade');
-            }
-        }
-
-        // Verificar aba de Cliente
-        const clienteTab = document.getElementById('tab-cliente');
-        if (clienteTab) {
-            const hasClienteErrors = clienteTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasClienteErrors) {
-                errorTabs.push('tab-cliente');
-            }
-        }
-
-        // Verificar aba de Endereços
-        const enderecoTab = document.getElementById('tab-endereco');
-        if (enderecoTab) {
-            const hasEnderecoErrors = enderecoTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasEnderecoErrors) {
-                errorTabs.push('tab-endereco');
-            }
-        }
-
-        // Verificar aba de Referências
-        const referenciaTab = document.getElementById('tab-referencias');
-        if (referenciaTab) {
-            const hasReferenciaErrors = referenciaTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasReferenciaErrors) {
-                errorTabs.push('tab-referencias');
-            }
-        }
-
-        // Adicionar badges e classes de erro nas abas
-        errorTabs.forEach(tabId => {
-            const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
-            if (tabBtn) {
-                tabBtn.classList.add('has-error');
-                // Adicionar badge se ainda não existir
-                if (!tabBtn.querySelector('.tab-error-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'tab-error-badge';
-                    tabBtn.appendChild(badge);
-                }
-            }
-        });
-
-        // Mudar para a primeira aba com erro
-        if (errorTabs.length > 0) {
-            switchToTab(errorTabs[0]);
-        }
-    }
-
-    // Executar detecção de erros ao carregar a página
-    document.addEventListener('DOMContentLoaded', detectAndMarkErrors);
-    // Também executar imediatamente caso o DOM já esteja carregado
-    detectAndMarkErrors();
 
     // Sistema de Busca de Cliente
     const searchInput = document.getElementById('cliente-search');
     const resultsDropdown = document.getElementById('cliente-results');
-    const clienteSelecionadoInfo = document.getElementById('cliente-selecionado-info');
-    const clienteInfoText = document.getElementById('cliente-info-text');
-    const clienteFormSection = document.getElementById('cliente-form-section');
-    const clienteField = document.getElementById('id_cliente');
+    const clienteSelecionado = document.getElementById('cliente-selecionado');
+    const clienteNome = document.getElementById('cliente-nome');
+    const clienteEmail = document.getElementById('cliente-email');
+    const novoClienteForm = document.getElementById('novo-cliente-form');
+    const criarNovoCheckbox = document.getElementById('criar-novo-cliente');
+    const clienteField = document.querySelector('input[name="cliente"]');
     const btnLimparCliente = document.getElementById('btn-limpar-cliente');
-    
-    // Campos do formulário de cliente
-    const clienteNomeInput = document.getElementById('id_cliente-nome');
-    const clienteEmailInput = document.getElementById('id_cliente-email');
-    const clienteTelefoneInput = document.getElementById('id_cliente-telefone');
-    const clienteSobreInput = document.getElementById('id_cliente-sobre');
 
     let clienteSelecionadoId = null;
-    let clienteOriginalData = null;
-
-    // Verificar se já existe um cliente selecionado (modo edição)
-    {% if atividade.cliente %}
-    clienteSelecionadoId = {{ atividade.cliente.id }};
-    clienteField.value = {{ atividade.cliente.id }};
-    clienteOriginalData = {
-        id: {{ atividade.cliente.id }},
-        nome: "{{ atividade.cliente.nome|escapejs }}",
-        email: "{{ atividade.cliente.email|escapejs }}",
-        telefone: "{{ atividade.cliente.telefone|escapejs }}",
-        sobre: "{{ atividade.cliente.sobre|escapejs }}"
-    };
-    clienteInfoText.textContent = 'Editando: {{ atividade.cliente.nome|escapejs }}';
-    clienteSelecionadoInfo.style.display = 'block';
-    {% endif %}
 
     // Debounce para busca
     let searchTimeout;
@@ -1188,8 +881,8 @@
             resultsDropdown.classList.add('visible');
             
             const url = query 
-                ? `/api/clientes/?search=${encodeURIComponent(query)}`
-                : `/api/clientes/`;
+                ? `/atividade/api/buscar-clientes/?q=${encodeURIComponent(query)}`
+                : `/atividade/api/buscar-clientes/`;
             
             const response = await fetch(url);
             const clientes = await response.json();
@@ -1207,7 +900,7 @@
                 // Adicionar event listeners aos itens
                 document.querySelectorAll('.cliente-result-item[data-id]').forEach(item => {
                     item.addEventListener('click', () => {
-                        carregarDadosCliente(item.dataset.id);
+                        selecionarCliente(item.dataset.id, item.dataset.nome, item.dataset.email);
                     });
                 });
             }
@@ -1216,110 +909,6 @@
         } catch (error) {
             console.error('Erro ao buscar clientes:', error);
             resultsDropdown.innerHTML = '<div class="cliente-result-item" style="color: var(--status-delayed); cursor: default;">Erro ao carregar clientes</div>';
-        }
-    }
-    
-    async function carregarDadosCliente(clienteId) {
-        try {
-            // Buscar dados completos do cliente via API
-            const response = await fetch(`/api/clientes/`);
-            const clientes = await response.json();
-            const cliente = clientes.find(c => c.id == clienteId);
-            
-            if (cliente) {
-                // Preencher formulário com dados do cliente
-                clienteNomeInput.value = cliente.nome || '';
-                clienteEmailInput.value = cliente.email || '';
-                clienteTelefoneInput.value = cliente.telefone || '';
-                clienteSobreInput.value = cliente.sobre || '';
-                
-                // Armazenar ID do cliente
-                clienteSelecionadoId = cliente.id;
-                clienteField.value = cliente.id;
-                
-                // Armazenar dados originais
-                clienteOriginalData = {
-                    id: cliente.id,
-                    nome: cliente.nome,
-                    email: cliente.email,
-                    telefone: cliente.telefone,
-                    sobre: cliente.sobre
-                };
-                
-                // Mostrar info de cliente selecionado
-                clienteInfoText.textContent = `Editando: ${cliente.nome}`;
-                clienteSelecionadoInfo.style.display = 'block';
-                
-                // Fechar dropdown e limpar busca
-                resultsDropdown.classList.remove('visible');
-                searchInput.value = '';
-                
-                // Carregar endereços do cliente
-                await carregarEnderecosCliente(cliente.id);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar dados do cliente:', error);
-        }
-    }
-    
-    async function carregarEnderecosCliente(clienteId) {
-        try {
-            const response = await fetch(`/api/clientes/${clienteId}/enderecos/`);
-            const enderecos = await response.json();
-            
-            // Limpar endereços existentes
-            const container = document.getElementById('enderecos-container');
-            container.innerHTML = '';
-            
-            // Atualizar contadores de forms
-            const totalFormsInput = document.getElementById('id_endereco-TOTAL_FORMS');
-            const initialFormsInput = document.getElementById('id_endereco-INITIAL_FORMS');
-            
-            totalFormsInput.value = enderecos.length;
-            initialFormsInput.value = enderecos.length;
-            
-            // Adicionar cada endereço ao formset
-            enderecos.forEach((endereco, index) => {
-                adicionarEnderecoAoFormset(endereco, index);
-            });
-            
-        } catch (error) {
-            console.error('Erro ao carregar endereços do cliente:', error);
-        }
-    }
-    
-    function adicionarEnderecoAoFormset(endereco, index) {
-        const container = document.getElementById('enderecos-container');
-        const template = document.getElementById('endereco-prototype');
-        
-        // Criar HTML do formulário substituindo __prefix__
-        let html = template.innerHTML.replace(/__prefix__/g, index).replace(/__index__/g, index);
-        
-        // Inserir no container
-        container.insertAdjacentHTML('beforeend', html);
-        
-        // Agora preencher os valores dos campos que foram inseridos no DOM
-        const ruaInput = document.querySelector(`[name="endereco-${index}-rua"]`);
-        const cidadeInput = document.querySelector(`[name="endereco-${index}-cidade"]`);
-        const estadoInput = document.querySelector(`[name="endereco-${index}-estado"]`);
-        const cepInput = document.querySelector(`[name="endereco-${index}-cep"]`);
-        const complementoInput = document.querySelector(`[name="endereco-${index}-complemento"]`);
-        
-        if (ruaInput) ruaInput.value = endereco.rua || '';
-        if (cidadeInput) cidadeInput.value = endereco.cidade || '';
-        if (estadoInput) estadoInput.value = endereco.estado || '';
-        if (cepInput) cepInput.value = endereco.cep || '';
-        if (complementoInput) complementoInput.value = endereco.complemento || '';
-        
-        // Adicionar campo hidden com ID do endereço se existir (para atualização)
-        if (endereco.id) {
-            const lastFormItem = container.lastElementChild;
-            const hiddenId = document.createElement('input');
-            hiddenId.type = 'hidden';
-            hiddenId.name = `endereco-${index}-id`;
-            hiddenId.id = `id_endereco-${index}-id`;
-            hiddenId.value = endereco.id;
-            lastFormItem.appendChild(hiddenId);
         }
     }
     
@@ -1341,40 +930,54 @@
 
     // Mostrar todos os clientes ao focar no input
     searchInput.addEventListener('focus', async (e) => {
-        if (e.target.value.trim().length === 0) {
+        if (e.target.value.trim().length === 0 && !clienteSelecionadoId) {
             await buscarClientes('');
         }
     });
 
+    function selecionarCliente(id, nome, email) {
+        clienteSelecionadoId = id;
+        clienteField.value = id;
+        document.getElementById('cliente-id-hidden').value = id;
+        clienteNome.textContent = nome;
+        clienteEmail.textContent = email;
+        clienteSelecionado.style.display = 'block';
+        resultsDropdown.classList.remove('visible');
+        searchInput.value = '';
+        criarNovoCheckbox.checked = false;
+        novoClienteForm.classList.remove('visible');
+    }
+
     // Limpar cliente selecionado
     btnLimparCliente.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // Limpar campos do formulário
-        clienteNomeInput.value = '';
-        clienteEmailInput.value = '';
-        clienteTelefoneInput.value = '';
-        clienteSobreInput.value = '';
-        
-        // Limpar variáveis de controle
         clienteSelecionadoId = null;
-        clienteOriginalData = null;
         clienteField.value = '';
-        
-        // Esconder info
-        clienteSelecionadoInfo.style.display = 'none';
-        
-        // Limpar busca
+        document.getElementById('cliente-id-hidden').value = '';
+        clienteSelecionado.style.display = 'none';
         searchInput.value = '';
-        
-        // Limpar endereços
-        const container = document.getElementById('enderecos-container');
-        container.innerHTML = '';
-        const totalFormsInput = document.getElementById('id_endereco-TOTAL_FORMS');
-        const initialFormsInput = document.getElementById('id_endereco-INITIAL_FORMS');
-        totalFormsInput.value = 0;
-        initialFormsInput.value = 0;
     });
+
+    // Checkbox para criar novo cliente
+    criarNovoCheckbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            novoClienteForm.classList.add('visible');
+            novoClienteForm.style.display = 'block';
+            clienteSelecionado.style.display = 'none';
+            clienteField.value = '';
+            document.getElementById('cliente-id-hidden').value = '';
+            searchInput.value = '';
+        } else {
+            novoClienteForm.classList.remove('visible');
+            novoClienteForm.style.display = 'none';
+        }
+    });
+    
+    // Verificar se o checkbox está marcado no carregamento (após erro de validação)
+    if (criarNovoCheckbox.checked) {
+        novoClienteForm.classList.add('visible');
+        novoClienteForm.style.display = 'block';
+    }
 
     // Fechar dropdown ao clicar fora
     document.addEventListener('click', (e) => {
@@ -1415,33 +1018,6 @@
 
     initFormset('endereco', 'add-endereco', 'enderecos-container', 'endereco-prototype');
     initFormset('referencia', 'add-referencia', 'referencias-container', 'referencia-prototype');
-
-    // Máscara de telefone
-    const telefoneInput = document.getElementById('id_cliente-telefone');
-    if (telefoneInput) {
-        telefoneInput.addEventListener('input', function(e) {
-            let v = e.target.value.replace(/\D/g, '').substring(0, 11);
-            if (v.length <= 2) e.target.value = v.length > 0 ? `(${v}` : '';
-            else if (v.length <= 6) e.target.value = `(${v.substring(0, 2)}) ${v.substring(2)}`;
-            else e.target.value = v.length <= 10 ? `(${v.substring(0, 2)}) ${v.substring(2, 6)}-${v.substring(6)}` : `(${v.substring(0, 2)}) ${v.substring(2, 7)}-${v.substring(7)}`;
-        });
-    }
-
-    // Máscara de CEP
-    document.addEventListener('input', function(e) {
-        if (e.target.name && e.target.name.endsWith('-cep')) {
-            let value = e.target.value.replace(/\D/g, '').substring(0, 8);
-            e.target.value = value.length > 5 ? `${value.substring(0, 5)}-${value.substring(5)}` : value;
-        }
-        // Nome, Rua, Cidade, Estado: apenas letras, espaços e acentos
-        if (e.target.name && (e.target.name.endsWith('-nome') || e.target.name.endsWith('-rua') || e.target.name.endsWith('-cidade') || e.target.name.endsWith('-estado'))) {
-            e.target.value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-        }
-        // Numero: apenas números
-        if (e.target.name && e.target.name.endsWith('-numero')) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-        }
-    });
 })();
 </script>
 {% endblock %}

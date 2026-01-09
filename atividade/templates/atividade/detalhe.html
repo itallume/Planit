@@ -275,21 +275,12 @@
                     
                     <div class="row" style="margin-top: 20px;">
                         <div class="info-card">
-                            <div class="label"><i class="fas fa-dollar-sign"></i> Valor Total</div>
+                            <div class="label"><i class="fas fa-dollar-sign"></i> Valor</div>
                             <div class="valor">R$ {{ atividade.valor|floatformat:2|default:"0,00" }}</div>
                         </div>
                         <div class="info-card">
                             <div class="label"><i class="fas fa-hand-holding-usd"></i> Valor Recebido</div>
                             <div class="valor">R$ {{ atividade.valor_recebido|floatformat:2|default:"0,00" }}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row" style="margin-top: 16px;">
-                        <div class="info-card" style="background: {% if atividade.valor_recebido < atividade.valor %}rgba(242, 104, 0, 0.1){% else %}rgba(163, 204, 171, 0.1){% endif %}; border-color: {% if atividade.valor_recebido < atividade.valor %}rgba(242, 104, 0, 0.3){% else %}rgba(163, 204, 171, 0.3){% endif %};">
-                            <div class="label"><i class="fas fa-wallet"></i> Valor Restante</div>
-                            <div class="valor" style="font-size: 1.25rem; font-weight: 600; color: {% if atividade.valor_recebido < atividade.valor %}var(--primary-orange){% else %}var(--green-light){% endif %};">
-                                R$ {% widthratio atividade.valor 1 1 as v %}{% widthratio atividade.valor_recebido -1 1 as vr %}{{ v|add:vr|floatformat:2 }}
-                            </div>
                         </div>
                     </div>
                     
@@ -348,14 +339,9 @@
                                         </div>
                                     </div>
                                     {% if referencia.arquivo %}
-                                        <div style="display:flex; gap:12px;">
-                                            <a href="{{ referencia.arquivo.url }}" target="_blank" rel="noopener">
-                                                <i class="fas fa-eye"></i> Visualizar
-                                            </a>
-                                            <a href="{% url 'download_referencia' referencia.id %}">
-                                                <i class="fas fa-download"></i> Baixar
-                                            </a>
-                                        </div>
+                                        <a href="{{ referencia.arquivo.url }}" target="_blank">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
                                     {% endif %}
                                 </div>
                             </div>

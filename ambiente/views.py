@@ -3,16 +3,12 @@ from django.shortcuts import render, redirect
 from ambiente.forms import AmbienteForm
 from ambiente.models import Ambiente
 from django.db.models import Count, Q
-from django.contrib.auth.decorators import login_required
+
 # Create your views here.
 
 class AmbienteView:
-    @login_required
     def lista_ambientes(request):
-        # Filtrar apenas ambientes onde o usuário é administrador OU participante
-        ambientes = Ambiente.objects.filter(
-            Q(usuario_administrador=request.user) | Q(usuarios_participantes=request.user)
-        ).distinct().annotate(
+        ambientes = Ambiente.objects.annotate(
             num_atividades=Count('atividade'),
             num_pendentes=Count('atividade', filter=Q(atividade__status='Pendente')),
             num_concluidas=Count('atividade', filter=Q(atividade__status='Concluído')),
@@ -21,7 +17,6 @@ class AmbienteView:
         form = AmbienteForm()
         return render(request, 'ambiente/home.html', {'ambientes': ambientes, 'form': form})
     
-    @login_required
     def detalhe_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         atividades = ambiente.atividade_set.all()
@@ -30,7 +25,6 @@ class AmbienteView:
             'atividades': atividades
         })
     
-    @login_required
     def criar_ambiente(request):
         if request.method == 'POST':
             form = AmbienteForm(request.POST)
@@ -41,9 +35,7 @@ class AmbienteView:
                 num_atrasadas=Count('atividade', filter=Q(atividade__status='Atrasado'))
             )
             if form.is_valid():
-                ambiente = form.save(commit=False)
-                ambiente.usuario_administrador = request.user
-                ambiente.save()
+                form.save()
                 return redirect('lista_ambientes')
             else:
                 # Renderiza home.html com o form preenchido e erros
@@ -51,7 +43,6 @@ class AmbienteView:
         # Se acessar diretamente, redireciona para lista
         return redirect('lista_ambientes')
     
-    @login_required
     def editar_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         if request.method == 'POST':
@@ -86,12 +77,12 @@ class AmbienteView:
             'ambiente_editar_id': ambiente.id
         })
     
-    @login_required
     def deletar_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         if request.method == 'POST':
             ambiente.delete()
             return redirect('lista_ambientes')
+        # GET: não renderiza nada, apenas redireciona (o modal é aberto via JS)
         return redirect('lista_ambientes')
     
     

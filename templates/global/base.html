@@ -164,42 +164,6 @@
         .btn-primary:hover {
             opacity: 0.9;
         }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-left: 20px;
-        }
-
-        .user-info {
-            color: var(--green-light);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
-
-        .btn-logout:hover {
-            background: #ef4444;
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -214,7 +178,6 @@
         </div>
 
         <div style="display: flex; align-items: center;">
-            {% if user.is_authenticated %}
             <!-- Search bar -->
             <form action="{% url 'lista_ambientes' %}" method="get" style="margin: 0;">
                 <div class="search-container">
@@ -224,26 +187,6 @@
                     </button>
                 </div>
             </form>
-
-            <!-- User Menu -->
-            <div class="user-menu">
-                <span class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    {{ user.username }}
-                </span>
-                <a href="{% url 'logout' %}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Sair
-                </a>
-            </div>
-            {% else %}
-            <div class="user-menu">
-                <a href="{% url 'signin' %}" class="btn-logout" style="background: rgba(163, 204, 171, 0.2); color: var(--green-light); border-color: var(--green-light);">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Entrar
-                </a>
-            </div>
-            {% endif %}
         </div>
     </header>
 
