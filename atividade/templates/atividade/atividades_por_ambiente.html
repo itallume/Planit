@@ -28,6 +28,7 @@
         color: var(--text-light);
         margin: 0 0 12px 0;
         font-weight: 700;
+        text-align: center;
     }
 
     .header-text p {
@@ -57,6 +58,28 @@
 
     .btn-nova-atividade:hover {
         opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    .btn-voltar-ambiente {
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .btn-voltar-ambiente:hover {
+        background: rgba(163, 204, 171, 0.2);
         transform: translateY(-1px);
     }
 
@@ -375,11 +398,15 @@
 
 <div class="container-atividades">
     <div class="page-header">
+        <a href="{% url 'lista_ambientes' %}" class="btn-voltar-ambiente">
+            <i class="fas fa-arrow-left"></i>
+            Ambientes
+        </a>
         <div class="header-text">
             <h1>Atividades</h1>
             <p>Visualize e gerencie suas atividades por dia</p>
         </div>
-        <a href="{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}" class="btn-nova-atividade">
+        <a href="{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}" id="btnNovaAtividade" class="btn-nova-atividade">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Nova Atividade
         </a>
@@ -519,6 +546,13 @@
         
         // Update activities header
         document.getElementById('activitiesHeader').textContent = `Atividades para ${day} de ${month}`;
+        
+        // Update "Nova Atividade" button to include data_prevista
+        const btnNovaAtividade = document.getElementById('btnNovaAtividade');
+        if (btnNovaAtividade) {
+            const baseUrl = `{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}`;
+            btnNovaAtividade.href = `${baseUrl}&data_prevista=${dateStr}`;
+        }
         
         // Filter activities by selected date
         filterActivities(dateStr);

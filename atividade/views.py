@@ -2,27 +2,69 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404
 from django.db.models import Q
 from datetime import timedelta
-from .models import Atividade, Cliente
+import os
+import mimetypes
+from .models import Atividade, Cliente, Referencia, Endereco
 from .forms import AtividadeForm, ClienteForm, EnderecoFormSet, ReferenciaFormSet
 from ambiente.models import Ambiente
 import json
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .mixins import AmbientePermissionMixin
+from rest_framework import viewsets, permissions
+from .serializers import ClienteSerializer, EnderecoSerializer
 
+class ClienteViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-def buscar_clientes(request):
-    """API para buscar clientes por nome ou email"""
-    query = request.GET.get('q', '').strip()
-    clientes = Cliente.objects.all().order_by('nome')
+    def get_queryset(self):
+        """Permitir busca por nome ou email via parâmetro 'search'"""
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(Q(nome__icontains=search) | Q(email__icontains=search))
+        limit = 10 if search else 20
+        queryset = queryset.values('id', 'nome', 'email', 'telefone', 'sobre').order_by('nome')[:limit]
+        return queryset
+
+class EnderecoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = EnderecoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        cliente_id = self.kwargs.get('cliente_id')
+        return Endereco.objects.filter(cliente_id=cliente_id).values(
+            'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
+        )
+
+# @login_required
+# def buscar_clientes(request):
+#     """API para buscar clientes por nome ou email"""
+#     query = request.GET.get('q', '').strip()
+#     clientes = Cliente.objects.all().order_by('nome')
     
-    if query:
-        clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
-    limit = 10 if query else 20
-    clientes = clientes.values('id', 'nome', 'email')[:limit]
-    return JsonResponse(list(clientes), safe=False)
+#     if query:
+#         clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
+#     limit = 10 if query else 20
+#     clientes = clientes.values('id', 'nome', 'email', 'telefone', 'sobre')[:limit]
+#     return JsonResponse(list(clientes), safe=False)
 
-class AtividadesPorAmbienteView(ListView):
+
+
+# @login_required
+# def buscar_enderecos_cliente(request, cliente_id):
+#     """API para buscar endereços de um cliente específico"""
+#     enderecos = Endereco.objects.filter(cliente_id=cliente_id).values(
+#         'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
+#     )
+#     return JsonResponse(list(enderecos), safe=False)
+
+class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, ListView):
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
@@ -59,14 +101,7 @@ class AtividadesPorAmbienteView(ListView):
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         return context
 
-class AtividadeListView(ListView):
-    model = Atividade
-    template_name = 'atividade/lista.html'
-    context_object_name = 'atividades'
-    paginate_by = 10
-
-
-class AtividadeDetailView(DetailView):
+class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, DetailView):
     model = Atividade
     template_name = 'atividade/detalhe.html'
     context_object_name = 'atividade'
@@ -88,8 +123,7 @@ class AtividadeDetailView(DetailView):
             context['ambiente_id'] = None
         return context
 
-
-class AtividadeCreateView(CreateView):
+class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
@@ -115,9 +149,24 @@ class AtividadeCreateView(CreateView):
             except Ambiente.DoesNotExist:
                 pass
         
+        # Preencher data_prevista se foi passada via GET
+        data_prevista = self.request.GET.get('data_prevista')
+        if data_prevista and 'atividade_form' in context:
+            # Pré-preencher o campo data_prevista
+            context['atividade_form'].fields['data_prevista'].initial = data_prevista
+        
         if self.request.POST:
-            context['cliente_form'] = ClienteForm(self.request.POST, prefix='cliente')
-            context['endereco_formset'] = EnderecoFormSet(self.request.POST, prefix='endereco')
+            # Se há cliente_id no POST, carregar a instância para o formulário
+            cliente_id = self.request.POST.get('cliente')
+            cliente_instance = None
+            if cliente_id:
+                try:
+                    cliente_instance = Cliente.objects.get(id=cliente_id)
+                except Cliente.DoesNotExist:
+                    pass
+            
+            context['cliente_form'] = ClienteForm(self.request.POST, instance=cliente_instance, prefix='cliente')
+            context['endereco_formset'] = EnderecoFormSet(self.request.POST, instance=cliente_instance, prefix='endereco')
             context['referencia_formset'] = ReferenciaFormSet(self.request.POST, self.request.FILES, prefix='referencia')
         else:
             context['cliente_form'] = ClienteForm(prefix='cliente')
@@ -148,22 +197,35 @@ class AtividadeCreateView(CreateView):
         if not referencia_formset.is_valid():
             return self.form_invalid(form)
         
-        # Processar cliente - pode vir do campo cliente (já preenchido via JS) ou do formulário novo
-        cliente_id = self.request.POST.get('cliente') or self.request.POST.get('cliente-id-hidden')
-        criar_novo = self.request.POST.get('criar-novo-cliente')
+        # Processar cliente - verificar se há dados de cliente no formulário
+        cliente_id = self.request.POST.get('cliente')
+        cliente_nome = cliente_form.cleaned_data.get('nome') if cliente_form.is_valid() else None
         cliente = None
         
-        if cliente_id:
-            # Cliente existente foi selecionado
+        if cliente_id and cliente_nome:
+            # Cliente existente sendo editado
             try:
                 cliente = Cliente.objects.get(id=cliente_id)
+                # Atualizar dados do cliente
+                if cliente_form.is_valid():
+                    # NÃO precisa atribuir instance aqui, já foi feito no get_context_data
+                    cliente = cliente_form.save()
+                    
+                    # Atualizar endereços - vincular ao cliente e salvar
+                    endereco_formset.instance = cliente
+                    if endereco_formset.is_valid():
+                        endereco_formset.save()
+                    elif endereco_formset.is_bound and endereco_formset.errors:
+                        # Se houver erros nos endereços, retornar
+                        return self.form_invalid(form)
+                else:
+                    return self.form_invalid(form)
             except Cliente.DoesNotExist:
                 form.add_error(None, 'Cliente selecionado não existe')
                 return self.form_invalid(form)
-        elif criar_novo:
+        elif cliente_nome:
             # Novo cliente será criado
-            # Validar formulário de cliente
-            if cliente_form.is_valid() and cliente_form.cleaned_data.get('nome'):
+            if cliente_form.is_valid():
                 # Salvar cliente
                 cliente = cliente_form.save()
                 
@@ -177,9 +239,6 @@ class AtividadeCreateView(CreateView):
                 # Salvar endereços se houver
                 if endereco_formset.is_bound:
                     endereco_formset.save()
-            elif cliente_form.is_valid():
-                # Checkbox marcado mas sem nome - apenas continua sem cliente
-                pass
             else:
                 # Formulário de cliente inválido - retornar erro
                 return self.form_invalid(form)
@@ -196,14 +255,20 @@ class AtividadeCreateView(CreateView):
         referencia_formset.save()
         
         return redirect(self.get_success_url())
+    
+    def form_invalid(self, form):
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
-
-class AtividadeUpdateView(UpdateView):
+class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
     pk_url_kwarg = 'atividade_id'
-    success_url = reverse_lazy('lista_atividades')
+    
+    def get_success_url(self):
+        atividade = self.get_object()
+        return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': atividade.ambiente.id})
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -244,22 +309,35 @@ class AtividadeUpdateView(UpdateView):
         if not referencia_formset.is_valid():
             return self.form_invalid(form)
         
-        # Processar cliente
-        cliente_id = self.request.POST.get('cliente') or self.request.POST.get('cliente-id-hidden')
-        criar_novo = self.request.POST.get('criar-novo-cliente')
+        # Processar cliente - verificar se há dados de cliente no formulário
+        cliente_id = self.request.POST.get('cliente')
+        cliente_nome = cliente_form.cleaned_data.get('nome') if cliente_form.is_valid() else None
         cliente = None
         
-        if cliente_id:
-            # Cliente existente foi selecionado
+        if cliente_id and cliente_nome:
+            # Cliente existente sendo editado
             try:
                 cliente = Cliente.objects.get(id=cliente_id)
+                # Atualizar dados do cliente
+                if cliente_form.is_valid():
+                    # NÃO precisa atribuir instance aqui, já foi feito no get_context_data
+                    cliente = cliente_form.save()
+                    
+                    # Atualizar endereços - vincular ao cliente e salvar
+                    endereco_formset.instance = cliente
+                    if endereco_formset.is_valid():
+                        endereco_formset.save()
+                    elif endereco_formset.is_bound and endereco_formset.errors:
+                        # Se houver erros nos endereços, retornar
+                        return self.form_invalid(form)
+                else:
+                    return self.form_invalid(form)
             except Cliente.DoesNotExist:
                 form.add_error(None, 'Cliente selecionado não existe')
                 return self.form_invalid(form)
-        elif criar_novo:
-            # Novo cliente ou atualizar cliente existente
-            # Validar formulário de cliente
-            if cliente_form.is_valid() and cliente_form.cleaned_data.get('nome'):
+        elif cliente_nome:
+            # Novo cliente será criado
+            if cliente_form.is_valid():
                 # Salvar cliente
                 cliente = cliente_form.save()
                 
@@ -273,9 +351,6 @@ class AtividadeUpdateView(UpdateView):
                 # Salvar endereços se houver
                 if endereco_formset.is_bound:
                     endereco_formset.save()
-            elif cliente_form.is_valid():
-                # Checkbox marcado mas sem nome - apenas continua sem cliente
-                pass
             else:
                 # Formulário de cliente inválido - retornar erro
                 return self.form_invalid(form)
@@ -292,10 +367,19 @@ class AtividadeUpdateView(UpdateView):
         referencia_formset.instance = self.object
         referencia_formset.save()
         
-        return redirect(self.success_url)
+        return redirect(self.get_success_url())
+    
+    def form_invalid(self, form):
+        """Sobrescrever para adicionar contexto de erro"""
+        print("=== FORM INVALID ===")
+        print(f"Atividade form errors: {form.errors}")
+        context = self.get_context_data(form=form)
+        print(f"Cliente form errors: {context['cliente_form'].errors}")
+        print(f"Endereco formset errors: {context['endereco_formset'].errors}")
+        print(f"Referencia formset errors: {context['referencia_formset'].errors}")
+        return self.render_to_response(context)
 
-
-class AtividadeDeleteView(DeleteView):
+class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, DeleteView):
     model = Atividade
     template_name = 'atividade/deletar.html'
     context_object_name = 'atividade'
@@ -313,5 +397,33 @@ class AtividadeDeleteView(DeleteView):
         # Redirecionar para a página de atividades do ambiente após exclusão
         atividade = self.get_object()
         return reverse_lazy('atividades_por_ambiente', kwargs={'ambiente_id': atividade.ambiente.id})
+
+@login_required
+def download_referencia(request, referencia_id: int):
+    referencia = get_object_or_404(Referencia, id=referencia_id)
+    if not referencia.arquivo:
+        raise Http404("Arquivo não encontrado")
+
+    original_name = os.path.basename(referencia.arquivo.name)
+    base, ext = os.path.splitext(original_name)
+    desired_name = (referencia.nome_arquivo or '').strip()
+
+    if desired_name:
+        # If a custom name is provided, ensure it has the original extension
+        if not os.path.splitext(desired_name)[1] and ext:
+            filename = desired_name + ext
+        else:
+            filename = desired_name
+    else:
+        # Fallback to stored filename with extension
+        filename = original_name
+
+    content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+    return FileResponse(
+        referencia.arquivo.open('rb'),
+        as_attachment=True,
+        filename=filename,
+        content_type=content_type,
+    )
 
 
