@@ -6,6 +6,13 @@
 
 {% block content %}
 <style>
+    {% if ambiente.tema %}
+    :root {
+        --ambiente-theme-color: {{ ambiente.tema }};
+        --ambiente-theme-color-alpha: {{ ambiente.tema }}33;
+    }
+    {% endif %}
+    
     .container-atividades {
         display: flex;
         flex-direction: column;
@@ -25,7 +32,7 @@
 
     .header-text h1 {
         font-size: 2rem;
-        color: var(--text-light);
+        color: var(--ambiente-theme-color, var(--text-light));
         margin: 0 0 12px 0;
         font-weight: 700;
         text-align: center;
@@ -39,7 +46,7 @@
     }
 
     .btn-nova-atividade {
-        background-color: var(--primary-orange);
+        background-color: var(--ambiente-theme-color, var(--primary-orange));
         color: white;
         padding: 12px 24px;
         border-radius: 6px;
@@ -147,12 +154,12 @@
 
     .day-card:hover {
         background: rgba(242, 104, 0, 0.1);
-        border-color: var(--primary-orange);
+        border-color: var(--ambiente-theme-color, var(--primary-orange));
         transform: translateY(-4px);
     }
 
     .day-card.today {
-        background: var(--primary-orange);
+        background: var(--ambiente-theme-color, var(--primary-orange));
         color: white;
         font-weight: 700;
         box-shadow: 0 4px 12px rgba(242, 104, 0, 0.4);
@@ -254,8 +261,8 @@
 
     /* Today takes priority over selected */
     .day-card.today.selected {
-        background: var(--primary-orange);
-        border-color: var(--primary-orange);
+        background: var(--ambiente-theme-color, var(--primary-orange));
+        border-color: var(--ambiente-theme-color, var(--primary-orange));
     }
 
     .day-card.today.selected .day-name,
@@ -351,12 +358,12 @@
     }
 
     .btn-view {
-        background: var(--green-medium);
+        background: var(--ambiente-theme-color, var(--green-medium));
         color: white;
     }
 
     .btn-edit {
-        background: var(--primary-orange);
+        background: var(--ambiente-theme-color, var(--primary-orange));
         color: white;
     }
 

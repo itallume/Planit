@@ -73,6 +73,8 @@
         display: flex;
         flex-direction: column;
         transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        position: relative;
     }
 
     .ambiente-card:hover {
@@ -93,11 +95,24 @@
         font-weight: 600;
         color: var(--text-light);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .theme-indicator {
+        width: 12px;
+        height: 18px;
+        border-radius: 10%;
+        flex-shrink: 0;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
     }
     
     .card-actions {
         display: flex;
         gap: 10px;
+        position: relative;
+        z-index: 10;
     }
 
     .icon-btn {
@@ -235,6 +250,31 @@
         color: rgba(163, 204, 171, 0.7);
         border: 2px dashed rgba(163, 204, 171, 0.3);
     }
+    
+    .color-picker {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .color-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 3px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .color-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .color-btn.selected {
+        border-color: white;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
 
 </style>
 
@@ -253,20 +293,24 @@
     {% if ambientes %}
         <div class="ambientes-grid">
             {% for ambiente in ambientes %}
-            <div class="ambiente-card">
+            <div class="ambiente-card" onclick="window.location.href='{% url 'atividades_por_ambiente' ambiente.id %}'" style="border-bottom: 10px solid {{ ambiente.tema }};">
+
                 <div class="card-top">
-                    <h3 class="card-titulo">{{ ambiente.nome }}</h3>
+                    <h3 class="card-titulo">
+                        <span class="theme-indicator" style="background-color: {{ ambiente.tema }}"></span> 
+                        {{ ambiente.nome }}
+                    </h3>
                     <div class="card-actions">
                         <!-- View -->
-                        <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="icon-btn" title="Ver Detalhes">
+                        <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="icon-btn" title="Ver Detalhes" onclick="event.stopPropagation();">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </a>
                         <!-- Edit -->
-                        <button onclick="abrirModalEditar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}', '{{ ambiente.tema|default_if_none:''|escapejs }}')" class="icon-btn" title="Editar">
+                        <button onclick="event.stopPropagation(); abrirModalEditar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}', '{{ ambiente.tema|default_if_none:''|escapejs }}')" class="icon-btn" title="Editar">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                         <!-- Delete -->
-                        <button onclick="abrirModalDeletar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}')" class="icon-btn delete" title="Excluir">
+                        <button onclick="event.stopPropagation(); abrirModalDeletar({{ ambiente.id }}, '{{ ambiente.nome|escapejs }}')" class="icon-btn delete" title="Excluir">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
@@ -324,8 +368,16 @@
                 <div id="error_nome" class="error-message" style="color: #e53e3e; font-size: 0.85rem; margin-top: 4px;"></div>
             </div>
             <div class="form-group">
-                <label for="id_tema">Tema (Opcional)</label>
-                <input type="text" name="tema" id="id_tema" placeholder="Ex: Azul, Escritório...">
+                <label for="id_tema">Cor do Tema</label>
+                <input type="hidden" name="tema" id="id_tema" value="#1E3A8A">
+                <div class="color-picker">
+                    <button type="button" class="color-btn selected" style="background-color: #1E3A8A;" onclick="selectColor('#1E3A8A', this)" title="Azul Marinho Corporativo"></button>
+                    <button type="button" class="color-btn" style="background-color: #1F2937;" onclick="selectColor('#1F2937', this)" title="Cinza Grafite"></button>
+                    <button type="button" class="color-btn" style="background-color: #0F766E;" onclick="selectColor('#0F766E', this)" title="Verde Petróleo"></button>
+                    <button type="button" class="color-btn" style="background-color: #7F1D1D;" onclick="selectColor('#7F1D1D', this)" title="Vinho Corporativo"></button>
+                    <button type="button" class="color-btn" style="background-color: #4C1D95;" onclick="selectColor('#4C1D95', this)" title="Roxo Escuro Institucional"></button>
+                    <button type="button" class="color-btn" style="background-color: #A16207;" onclick="selectColor('#A16207', this)" title="Dourado Envelhecido"></button>
+                </div>
                 <div id="error_tema" class="error-message" style="color: #e53e3e; font-size: 0.85rem; margin-top: 4px;"></div>
             </div>
             <div class="modal-buttons">
@@ -349,8 +401,16 @@
                 <div id="editar_error_nome" class="error-message" style="color: #e53e3e; font-size: 0.85rem; margin-top: 4px;"></div>
             </div>
             <div class="form-group">
-                <label for="editar_tema">Tema</label>
-                <input type="text" name="tema" id="editar_tema">
+                <label for="editar_tema">Cor do Tema</label>
+                <input type="hidden" name="tema" id="editar_tema" value="#1E3A8A">
+                <div class="color-picker" id="editar_color_picker">
+                    <button type="button" class="color-btn" style="background-color: #1E3A8A;" onclick="selectColorEditar('#1E3A8A', this)" title="Azul Marinho Corporativo"></button>
+                    <button type="button" class="color-btn" style="background-color: #1F2937;" onclick="selectColorEditar('#1F2937', this)" title="Cinza Grafite"></button>
+                    <button type="button" class="color-btn" style="background-color: #0F766E;" onclick="selectColorEditar('#0F766E', this)" title="Verde Petróleo"></button>
+                    <button type="button" class="color-btn" style="background-color: #7F1D1D;" onclick="selectColorEditar('#7F1D1D', this)" title="Vinho Corporativo"></button>
+                    <button type="button" class="color-btn" style="background-color: #4C1D95;" onclick="selectColorEditar('#4C1D95', this)" title="Roxo Escuro Institucional"></button>
+                    <button type="button" class="color-btn" style="background-color: #A16207;" onclick="selectColorEditar('#A16207', this)" title="Dourado Envelhecido"></button>
+                </div>
                 <div id="editar_error_tema" class="error-message" style="color: #e53e3e; font-size: 0.85rem; margin-top: 4px;"></div>
             </div>
             <div class="modal-buttons">
@@ -385,6 +445,18 @@
 </div>
 
 <script>
+    function selectColor(color, button) {
+        document.getElementById('id_tema').value = color;
+        document.querySelectorAll('#modalAmbiente .color-btn').forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+    }
+    
+    function selectColorEditar(color, button) {
+        document.getElementById('editar_tema').value = color;
+        document.querySelectorAll('#editar_color_picker .color-btn').forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+    }
+    
     function abrirModalAmbiente() {
         document.getElementById('modalAmbiente').style.display = 'flex';
         document.getElementById('id_nome').focus();
@@ -395,19 +467,41 @@
         document.getElementById('formAmbiente').reset();
         document.getElementById('error_nome').textContent = '';
         document.getElementById('error_tema').textContent = '';
+        // Reset color selection
+        document.querySelectorAll('#modalAmbiente .color-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelector('#modalAmbiente .color-btn').classList.add('selected');
     }
     
     function abrirModalEditar(id, nome, tema) {
         // Garantir que valores nulos/None não apareçam no input
-        if (tema === 'None' || tema === null || tema === undefined) {
-            tema = '';
+        if (tema === 'None' || tema === null || tema === undefined || tema === '') {
+            tema = '#F26800';
         }
         document.getElementById('editar_ambiente_id').value = id;
         document.getElementById('editar_nome').value = nome;
         document.getElementById('editar_tema').value = tema;
+        
+        // Selecionar o botão de cor correspondente
+        document.querySelectorAll('#editar_color_picker .color-btn').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.style.backgroundColor.toUpperCase() === tema.toUpperCase() || 
+                rgbToHex(btn.style.backgroundColor) === tema.toUpperCase()) {
+                btn.classList.add('selected');
+            }
+        });
+        
         document.getElementById('formEditarAmbiente').action = `/ambiente/${id}/editar/`;
         document.getElementById('modalEditarAmbiente').style.display = 'flex';
         document.getElementById('editar_nome').focus();
+    }
+    
+    function rgbToHex(rgb) {
+        const result = rgb.match(/\d+/g);
+        if (!result) return rgb;
+        return '#' + result.map(x => {
+            const hex = parseInt(x).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('').toUpperCase();
     }
     
     function fecharModalEditar() {
