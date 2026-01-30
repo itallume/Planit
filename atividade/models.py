@@ -63,7 +63,8 @@ class Endereco(models.Model):
     estado = models.CharField(max_length=100)
     cep = models.CharField(max_length=20)
     complemento = models.CharField(max_length=200, blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, related_name='enderecos')
+    atividade = models.ForeignKey(Atividade, on_delete=models.CASCADE, null=True, related_name='enderecos')
 
     def __str__(self):
         return f"{self.rua}, {self.cidade}"

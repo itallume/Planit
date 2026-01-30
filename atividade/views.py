@@ -137,7 +137,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Renomear 'form' para 'atividade_form' para manter compatibilidade com o template
         if 'form' in context:
             context['atividade_form'] = context.pop('form')
         
@@ -147,7 +146,7 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
                 ambiente = Ambiente.objects.get(id=ambiente_id)
                 context['ambiente'] = ambiente
             except Ambiente.DoesNotExist:
-                pass
+                pass #TODO tratar
         
         # Preencher data_prevista se foi passada via GET
         data_prevista = self.request.GET.get('data_prevista')
@@ -163,7 +162,7 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
                 try:
                     cliente_instance = Cliente.objects.get(id=cliente_id)
                 except Cliente.DoesNotExist:
-                    pass
+                    pass #TODO tratar
             
             context['cliente_form'] = ClienteForm(self.request.POST, instance=cliente_instance, prefix='cliente')
             context['endereco_formset'] = EnderecoFormSet(self.request.POST, instance=cliente_instance, prefix='endereco')

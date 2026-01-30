@@ -15,5 +15,5 @@ class ClienteSerializer(serializers.ModelSerializer):
 class EnderecoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Endereco 
-        fields = ['rua', 'numero', 'cidade', 'estado', 'cep', 'complemento']
+        fields = '__all__'
         read_only_fields = ['id']
