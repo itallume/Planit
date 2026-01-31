@@ -5,6 +5,30 @@ from django.conf import settings
 from django.db import migrations, models
 
 
+def create_default_user_if_needed(apps, schema_editor):
+    """Cria um usuário padrão se necessário e atribui ambientes existentes a ele"""
+    User = apps.get_model('auth', 'User')
+    Ambiente = apps.get_model('ambiente', 'Ambiente')
+    
+    # Se não houver usuários, criar um usuário padrão
+    if not User.objects.exists():
+        user = User.objects.create_user(
+            username='admin',
+            email='admin@planit.com',
+            password='admin123',
+            is_staff=True,
+            is_superuser=True
+        )
+    else:
+        # Usar o primeiro usuário existente
+        user = User.objects.first()
+    
+    # Atribuir o usuário a todos os ambientes existentes que não têm administrador
+    Ambiente.objects.filter(usuario_administrador__isnull=True).update(
+        usuario_administrador=user
+    )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -16,7 +40,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='ambiente',
             name='usuario_administrador',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(null=True, blank=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.RunPython(create_default_user_if_needed, migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name='ambiente',
+            name='usuario_administrador',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='ambiente',

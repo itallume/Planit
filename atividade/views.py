@@ -146,24 +146,23 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
                 ambiente = Ambiente.objects.get(id=ambiente_id)
                 context['ambiente'] = ambiente
             except Ambiente.DoesNotExist:
-                pass #TODO tratar
+                return reverse_lazy('lista_atividades')
+        else:
+            return reverse_lazy('lista_atividades')
         
-        # Preencher data_prevista se foi passada via GET
         data_prevista = self.request.GET.get('data_prevista')
         if data_prevista and 'atividade_form' in context:
-            # Pré-preencher o campo data_prevista
             context['atividade_form'].fields['data_prevista'].initial = data_prevista
         
         if self.request.POST:
-            # Se há cliente_id no POST, carregar a instância para o formulário
             cliente_id = self.request.POST.get('cliente')
             cliente_instance = None
             if cliente_id:
                 try:
                     cliente_instance = Cliente.objects.get(id=cliente_id)
                 except Cliente.DoesNotExist:
-                    pass #TODO tratar
-            
+                    cliente_instance = None
+
             context['cliente_form'] = ClienteForm(self.request.POST, instance=cliente_instance, prefix='cliente')
             context['endereco_formset'] = EnderecoFormSet(self.request.POST, instance=cliente_instance, prefix='endereco')
             context['referencia_formset'] = ReferenciaFormSet(self.request.POST, self.request.FILES, prefix='referencia')
@@ -181,7 +180,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
         endereco_formset = context['endereco_formset']
         referencia_formset = context['referencia_formset']
         
-        # Validar que o ambiente foi definido
         if not ambiente_id:
             form.add_error(None, 'É necessário selecionar um ambiente')
             return self.form_invalid(form)
@@ -192,7 +190,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
             form.add_error(None, 'Ambiente inválido')
             return self.form_invalid(form)
         
-        # Validar referências formset primeiro (sempre necessário)
         if not referencia_formset.is_valid():
             return self.form_invalid(form)
         
@@ -205,17 +202,13 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
             # Cliente existente sendo editado
             try:
                 cliente = Cliente.objects.get(id=cliente_id)
-                # Atualizar dados do cliente
                 if cliente_form.is_valid():
-                    # NÃO precisa atribuir instance aqui, já foi feito no get_context_data
                     cliente = cliente_form.save()
                     
-                    # Atualizar endereços - vincular ao cliente e salvar
                     endereco_formset.instance = cliente
                     if endereco_formset.is_valid():
                         endereco_formset.save()
                     elif endereco_formset.is_bound and endereco_formset.errors:
-                        # Se houver erros nos endereços, retornar
                         return self.form_invalid(form)
                 else:
                     return self.form_invalid(form)
@@ -223,33 +216,25 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
                 form.add_error(None, 'Cliente selecionado não existe')
                 return self.form_invalid(form)
         elif cliente_nome:
-            # Novo cliente será criado
             if cliente_form.is_valid():
-                # Salvar cliente
                 cliente = cliente_form.save()
                 
-                # Atribuir instância e validar endereços
                 endereco_formset.instance = cliente
                 if endereco_formset.is_bound and not endereco_formset.is_valid():
-                    # Se endereços inválidos, deletar cliente criado para manter consistência
                     cliente.delete()
                     return self.form_invalid(form)
                 
-                # Salvar endereços se houver
                 if endereco_formset.is_bound:
                     endereco_formset.save()
             else:
-                # Formulário de cliente inválido - retornar erro
                 return self.form_invalid(form)
         
-        # Salvar atividade
         self.object = form.save(commit=False)
         self.object.ambiente = ambiente
         if cliente:
             self.object.cliente = cliente
         self.object.save()
         
-        # Salvar referências
         referencia_formset.instance = self.object
         referencia_formset.save()
         
@@ -271,7 +256,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateVie
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Renomear 'form' para 'atividade_form' para manter compatibilidade com o template
         if 'form' in context:
             context['atividade_form'] = context.pop('form')
         
@@ -294,7 +278,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateVie
             context['referencia_formset'] = ReferenciaFormSet(instance=atividade, prefix='referencia')
         
         context['atividade'] = atividade
-        # Passar o ambiente para o template poder voltar para a página correta
         context['ambiente'] = atividade.ambiente
         return context
     
@@ -304,30 +287,23 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateVie
         endereco_formset = context['endereco_formset']
         referencia_formset = context['referencia_formset']
         
-        # Validar referências formset primeiro (sempre necessário)
         if not referencia_formset.is_valid():
             return self.form_invalid(form)
         
-        # Processar cliente - verificar se há dados de cliente no formulário
         cliente_id = self.request.POST.get('cliente')
         cliente_nome = cliente_form.cleaned_data.get('nome') if cliente_form.is_valid() else None
         cliente = None
         
         if cliente_id and cliente_nome:
-            # Cliente existente sendo editado
             try:
                 cliente = Cliente.objects.get(id=cliente_id)
-                # Atualizar dados do cliente
                 if cliente_form.is_valid():
-                    # NÃO precisa atribuir instance aqui, já foi feito no get_context_data
                     cliente = cliente_form.save()
                     
-                    # Atualizar endereços - vincular ao cliente e salvar
                     endereco_formset.instance = cliente
                     if endereco_formset.is_valid():
                         endereco_formset.save()
                     elif endereco_formset.is_bound and endereco_formset.errors:
-                        # Se houver erros nos endereços, retornar
                         return self.form_invalid(form)
                 else:
                     return self.form_invalid(form)
@@ -335,34 +311,25 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateVie
                 form.add_error(None, 'Cliente selecionado não existe')
                 return self.form_invalid(form)
         elif cliente_nome:
-            # Novo cliente será criado
             if cliente_form.is_valid():
-                # Salvar cliente
                 cliente = cliente_form.save()
                 
-                # Atribuir instância e validar endereços
                 endereco_formset.instance = cliente
                 if endereco_formset.is_bound and not endereco_formset.is_valid():
-                    # Se endereços inválidos, deletar cliente criado para manter consistência
                     cliente.delete()
                     return self.form_invalid(form)
                 
-                # Salvar endereços se houver
                 if endereco_formset.is_bound:
                     endereco_formset.save()
             else:
-                # Formulário de cliente inválido - retornar erro
                 return self.form_invalid(form)
         
-        # Salvar atividade
         self.object = form.save()
         
-        # Atualizar cliente
         if cliente:
             self.object.cliente = cliente
             self.object.save()
         
-        # Salvar referências
         referencia_formset.instance = self.object
         referencia_formset.save()
         
