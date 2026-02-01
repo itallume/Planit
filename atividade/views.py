@@ -81,6 +81,7 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Lis
             data_prevista__lte=trinta_dias_frente
         ).order_by('data_prevista')
     
+    #TODO refazer isso aq
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ambiente_id = self.kwargs.get('ambiente_id')

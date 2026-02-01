@@ -24,3 +24,15 @@ class Ambiente(models.Model):
 
     def __str__(self):
         return self.nome
+    
+class AmbienteInvitations(models.Model):
+    ambiente = models.ForeignKey(Ambiente, on_delete=models.CASCADE, related_name='invitations')
+    email = models.EmailField()
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+    inviter = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='sent_invitations')
+    guest = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='invitations')
+
+    def __str__(self):
+        return f'Invitation to {self.email} for {self.ambiente.nome}'
