@@ -424,105 +424,36 @@
         border: 2px dashed rgba(163, 204, 171, 0.3);
     }
 
-    /* Modal Styles */
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-content {
-        background: #1a1a16;
-        padding: 32px;
-        border-radius: 12px;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        border: 1px solid rgba(163, 204, 171, 0.2);
-    }
-
-    .modal-content h2 {
-        color: var(--text-light);
-        margin: 0 0 24px 0;
-        font-size: 1.5rem;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        color: var(--green-light);
-        margin-bottom: 8px;
-        font-weight: 500;
-    }
-
-    .form-group input[type="email"] {
-        width: 100%;
-        padding: 12px;
-        background: rgba(163, 204, 171, 0.05);
-        border: 1px solid rgba(163, 204, 171, 0.2);
-        border-radius: 6px;
-        color: var(--text-light);
-        font-size: 1rem;
-        box-sizing: border-box;
-    }
-
-    .form-group input[type="email"]:focus {
-        outline: none;
-        border-color: var(--green-light);
-        background: rgba(163, 204, 171, 0.08);
-    }
-
-    .modal-buttons {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-        margin-top: 24px;
-    }
-
-    .btn-cancelar {
-        background: transparent;
-        color: var(--text-light);
-        border: 1px solid rgba(163, 204, 171, 0.3);
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-
-    .btn-cancelar:hover {
-        background: rgba(163, 204, 171, 0.1);
-    }
-
-    .btn-salvar {
-        background-color: var(--ambiente-theme-color, var(--primary-orange));
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-
-    .btn-salvar:hover {
-        opacity: 0.9;
-    }
-
     .header-actions {
         display: flex;
         gap: 12px;
         align-items: center;
+    }
+
+    .btn-configurar-ambiente {
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        padding: 12px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .btn-configurar-ambiente:hover {
+        background: rgba(163, 204, 171, 0.2);
+        transform: translateY(-1px) rotate(90deg);
+        color: var(--green-light);
+    }
+
+    .btn-configurar-ambiente i {
+        transition: transform 0.2s ease;
     }
 </style>
 
@@ -537,10 +468,9 @@
             <p>Visualize e gerencie suas atividades por dia</p>
         </div>
         <div class="header-actions">
-            <button onclick="abrirModalConvite()" class="btn-adicionar-colaborador">
-                <i class="fas fa-user-plus"></i>
-                Adicionar Colaborador
-            </button>
+            <a href="{% url 'configurar_ambiente' ambiente.id %}" class="btn-configurar-ambiente" title="Configurar Ambiente">
+                <i class="fas fa-cog"></i>
+            </a>
             <a href="{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}" id="btnNovaAtividade" class="btn-nova-atividade">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 Nova Atividade
@@ -746,135 +676,6 @@
             selectDay(dateStr, dayNum, monthShort);
         }, 100);
     });
-
-    // Modal de Convite
-    function abrirModalConvite() {
-        document.getElementById('modalConvite').style.display = 'flex';
-        document.getElementById('error_convite').style.display = 'none';
-    }
-
-    function fecharModalConvite() {
-        document.getElementById('modalConvite').style.display = 'none';
-        document.getElementById('formConvite').reset();
-        document.getElementById('error_convite').style.display = 'none';
-    }
-
-    async function enviarConvite(event) {
-        event.preventDefault();
-        
-        const form = document.getElementById('formConvite');
-        const email = document.getElementById('email_convite').value;
-        const errorDiv = document.getElementById('error_convite');
-        const btnEnviar = document.getElementById('btnEnviarConvite');
-        
-        // Limpar erros anteriores
-        errorDiv.style.display = 'none';
-        
-        // Desabilitar botão durante envio
-        btnEnviar.disabled = true;
-        btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-        
-        try {
-            const response = await fetch('{% url "enviar_convite" ambiente.id %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({
-                    email: email
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Fechar modal e mostrar mensagem de sucesso
-                fecharModalConvite();
-                mostrarMensagem('success', data.message);
-            } else {
-                // Mostrar erro do form no modal
-                errorDiv.textContent = data.message;
-                errorDiv.style.display = 'block';
-            }
-        } catch (error) {
-            errorDiv.textContent = 'Erro ao enviar convite. Tente novamente.';
-            errorDiv.style.display = 'block';
-        } finally {
-            // Reabilitar botão
-            btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Convite';
-        }
-    }
-
-    // Função para mostrar mensagem de sucesso
-    function mostrarMensagem(tipo, texto) {
-        let messagesContainer = document.querySelector('.messages-container');
-        
-        if (!messagesContainer) {
-            messagesContainer = document.createElement('div');
-            messagesContainer.className = 'messages-container';
-            document.body.appendChild(messagesContainer);
-        }
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${tipo}`;
-        
-        let icone = 'fa-info-circle';
-        if (tipo === 'success') icone = 'fa-check-circle';
-        else if (tipo === 'error') icone = 'fa-exclamation-circle';
-        else if (tipo === 'warning') icone = 'fa-exclamation-triangle';
-        
-        messageDiv.innerHTML = `
-            <i class="fas ${icone}"></i>
-            <span>${texto}</span>
-            <button class="message-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        messagesContainer.appendChild(messageDiv);
-        
-        // Auto-remover após 5 segundos
-        setTimeout(() => {
-            messageDiv.style.transition = 'opacity 0.3s, transform 0.3s';
-            messageDiv.style.opacity = '0';
-            messageDiv.style.transform = 'translateX(400px)';
-            setTimeout(() => messageDiv.remove(), 300);
-        }, 5000);
-    }
-
-    // Fechar modal ao clicar fora
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('modalConvite');
-        if (event.target === modal) {
-            fecharModalConvite();
-        }
-    });
 </script>
-
-<!-- Modal Enviar Convite -->
-<div id="modalConvite" class="modal-overlay">
-    <div class="modal-content">
-        <h2>Adicionar Colaborador</h2>
-        <form method="POST" id="formConvite" onsubmit="enviarConvite(event)">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="email_convite">Email do usuário:</label>
-                <input type="email" name="email" id="email_convite" placeholder="usuario@exemplo.com" required 
-                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                       title="Digite um email válido">
-                <div id="error_convite" style="color: #ef4444; margin-top: 8px; font-size: 0.9rem; display: none;"></div>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" onclick="fecharModalConvite()" class="btn-cancelar">Cancelar</button>
-                <button type="submit" class="btn-salvar" id="btnEnviarConvite">
-                    <i class="fas fa-paper-plane"></i>
-                    Enviar Convite
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {% endblock %}

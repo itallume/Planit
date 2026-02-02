@@ -36,15 +36,6 @@ class AmbienteView:
         return render(request, 'ambiente/home.html', {'ambientes': ambientes, 'invitations': invitations, 'form': form})
     
     @login_required
-    def detalhe_ambiente(request, ambiente_id):
-        ambiente = Ambiente.objects.get(id=ambiente_id)
-        atividades = ambiente.atividade_set.all()
-        return render(request, 'ambiente/detalhe.html', {
-            'ambiente': ambiente,
-            'atividades': atividades
-        })
-    
-    @login_required
     def criar_ambiente(request):
         if request.method == 'POST':
             form = AmbienteForm(request.POST)
@@ -107,6 +98,14 @@ class AmbienteView:
             ambiente.delete()
             return redirect('lista_ambientes')
         return redirect('lista_ambientes')
+    
+    @login_required
+    def configurar_ambiente(request, ambiente_id):
+        ambiente = Ambiente.objects.get(id=ambiente_id)
+        users_participantes = ambiente.usuarios_participantes.all()
+        return render(request, 'ambiente/configurar.html', {'ambiente': ambiente, 'users_participantes': users_participantes})
+    
+  
 
 
 class AmbienteInvitationViewSet(viewsets.ModelViewSet):
@@ -201,4 +200,4 @@ class AmbienteInvitationViewSet(viewsets.ModelViewSet):
     
 
 
-    
+   
