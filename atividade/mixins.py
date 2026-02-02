@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
-from ambiente.models import Ambiente
+from django.core.exceptions import PermissionDenied
+from ambiente.models import Ambiente, Participante
 
 
 class AmbientePermissionMixin:
@@ -40,3 +41,61 @@ class AmbientePermissionMixin:
             return redirect('lista_ambientes')
         
         return super().dispatch(request, *args, **kwargs)
+
+
+class AtividadePermissionMixin:
+    """Mixin para verificar permissões CRUD de atividades baseado nas roles do usuário"""
+    
+    def get_user_permissions(self, ambiente):
+        """Retorna as permissões do usuário no ambiente"""
+        user = self.request.user
+        
+        # Administrador do ambiente tem todas as permissões
+        if user == ambiente.usuario_administrador:
+            return {
+                'pode_visualizar_atividades': True,
+                'pode_criar_atividades': True,
+                'pode_editar_atividades': True,
+                'pode_deletar_atividades': True
+            }
+        
+        # Buscar participante e suas permissões
+        try:
+            participante = Participante.objects.get(usuario=user, ambiente=ambiente)
+            if participante.role:
+                return {
+                    'pode_visualizar_atividades': participante.role.pode_visualizar_atividades,
+                    'pode_criar_atividades': participante.role.pode_criar_atividades,
+                    'pode_editar_atividades': participante.role.pode_editar_atividades,
+                    'pode_deletar_atividades': participante.role.pode_deletar_atividades
+                }
+        except Participante.DoesNotExist:
+            pass
+        
+        # Sem permissões por padrão
+        return {
+            'pode_visualizar_atividades': False,
+            'pode_criar_atividades': False,
+            'pode_editar_atividades': False,
+            'pode_deletar_atividades': False
+        }
+    
+    def verificar_permissao_criar(self, ambiente):
+        """Verifica se o usuário pode criar atividades"""
+        perms = self.get_user_permissions(ambiente)
+        return perms['pode_criar_atividades']
+    
+    def verificar_permissao_editar(self, ambiente):
+        """Verifica se o usuário pode editar atividades"""
+        perms = self.get_user_permissions(ambiente)
+        return perms['pode_editar_atividades']
+    
+    def verificar_permissao_deletar(self, ambiente):
+        """Verifica se o usuário pode deletar atividades"""
+        perms = self.get_user_permissions(ambiente)
+        return perms['pode_deletar_atividades']
+    
+    def verificar_permissao_visualizar(self, ambiente):
+        """Verifica se o usuário pode visualizar atividades"""
+        perms = self.get_user_permissions(ambiente)
+        return perms['pode_visualizar_atividades']

@@ -1,4 +1,4 @@
-from .views import  AmbienteView, AmbienteInvitationViewSet
+from .views import  AmbienteView, AmbienteInvitationViewSet, editar_permissoes_participante, obter_permissoes_participante
 from django.urls import include, path
 
 invitation_create = AmbienteInvitationViewSet.as_view({
@@ -20,6 +20,8 @@ urlpatterns = [
     path('<int:ambiente_id>/deletar/', AmbienteView.deletar_ambiente, name='deletar_ambiente'),
     path('<int:ambiente_id>/convidar/', invitation_create, name='enviar_convite'),
     path('<int:ambiente_id>/configurar/', AmbienteView.configurar_ambiente, name='configurar_ambiente'),
+    path('<int:ambiente_id>/participante/<int:participante_id>/permissoes/', editar_permissoes_participante, name='editar_permissoes'),
+    path('<int:ambiente_id>/participante/<int:participante_id>/permissoes/obter/', obter_permissoes_participante, name='obter_permissoes'),
     path('convite/<int:pk>/aceitar/', invitation_accept, name='aceitar_convite'),
     path('convite/<int:pk>/recusar/', invitation_decline, name='recusar_convite'),
 ]

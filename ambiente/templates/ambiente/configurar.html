@@ -476,18 +476,19 @@
             </div>
 
             <!-- Membros Participantes -->
-            {% for user in users_participantes %}
+            {% for data in participantes_data %}
             <div class="member-card">
                 <div class="member-info">
-                    <div class="member-avatar">{{ user.username|first|upper }}</div>
+                    <div class="member-avatar">{{ data.user.username|first|upper }}</div>
                     <div class="member-details">
-                        <h4>{{ user.username }}</h4>
-                        <p>{{ user.email }}</p>
+                        <h4>{{ data.user.username }}</h4>
+                        <p>{{ data.user.email }}</p>
                     </div>
                 </div>
-                <span class="member-role">Membro</span>
+                <span class="member-role">{{ data.participante.role.get_nome_display|default:"Membro" }}</span>
                 <div class="member-actions">
-                    <button class="btn-icon btn-edit" title="Editar permissões">
+                    <button class="btn-icon btn-edit" title="Editar permissões" 
+                            onclick="abrirModalPermissoes({{ data.participante.id }}, '{{ data.user.username|escapejs }}')">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn-icon btn-remove" title="Remover do ambiente">
@@ -525,6 +526,73 @@
                 <button type="button" onclick="fecharModalConvite()" class="btn-cancelar">Cancelar</button>
                 <button type="submit" class="btn-salvar" id="btnEnviarConvite">
                     <i class="fas fa-paper-plane"></i> Enviar Convite
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Permissões -->
+<div id="modalPermissoes" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Editar Permissões</h2>
+        <p style="color: rgba(163, 204, 171, 0.7); margin-bottom: 24px;">
+            Usuário: <strong id="nomeUsuarioPermissoes" style="color: var(--green-light);"></strong>
+        </p>
+        <form id="formPermissoes" onsubmit="salvarPermissoes(event)">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: rgba(163, 204, 171, 0.05); border-radius: 6px; margin-bottom: 12px;">
+                    <input type="checkbox" id="perm_visualizar" checked disabled
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <div style="color: var(--text-light); font-weight: 500;">Visualizar Atividades</div>
+                        <div style="color: rgba(163, 204, 171, 0.6); font-size: 0.85rem;">Pode ver todas as atividades do ambiente</div>
+                    </div>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: rgba(163, 204, 171, 0.05); border-radius: 6px; margin-bottom: 12px;">
+                    <input type="checkbox" id="perm_criar"
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <div style="color: var(--text-light); font-weight: 500;">Criar Atividades</div>
+                        <div style="color: rgba(163, 204, 171, 0.6); font-size: 0.85rem;">Pode adicionar novas atividades</div>
+                    </div>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: rgba(163, 204, 171, 0.05); border-radius: 6px; margin-bottom: 12px;">
+                    <input type="checkbox" id="perm_editar"
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <div style="color: var(--text-light); font-weight: 500;">Editar Atividades</div>
+                        <div style="color: rgba(163, 204, 171, 0.6); font-size: 0.85rem;">Pode modificar atividades existentes</div>
+                    </div>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: rgba(163, 204, 171, 0.05); border-radius: 6px; margin-bottom: 12px;">
+                    <input type="checkbox" id="perm_deletar"
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <div style="color: var(--text-light); font-weight: 500;">Deletar Atividades</div>
+                        <div style="color: rgba(163, 204, 171, 0.6); font-size: 0.85rem;">Pode remover atividades permanentemente</div>
+                    </div>
+                </label>
+            </div>
+
+            <div style="background: rgba(242, 104, 0, 0.1); padding: 12px; border-radius: 6px; border-left: 3px solid var(--primary-orange); margin-bottom: 20px;">
+                <div style="color: var(--primary-orange); font-weight: 500; margin-bottom: 4px;">
+                    <i class="fas fa-info-circle"></i> Role Detectada: <span id="roleDetectada">Leitor</span>
+                </div>
+                <div style="color: rgba(163, 204, 171, 0.6); font-size: 0.85rem;">
+                    A role é automaticamente definida com base nas permissões selecionadas
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" onclick="fecharModalPermissoes()" class="btn-cancelar">Cancelar</button>
+                <button type="submit" class="btn-salvar" id="btnSalvarPermissoes">
+                    <i class="fas fa-save"></i> Salvar Permissões
                 </button>
             </div>
         </form>
@@ -631,11 +699,130 @@
 
     // Fechar modal ao clicar fora
     document.addEventListener('click', function(event) {
-        const modal = document.getElementById('modalConvite');
-        if (event.target === modal) {
+        const modalConvite = document.getElementById('modalConvite');
+        const modalPermissoes = document.getElementById('modalPermissoes');
+        
+        if (event.target === modalConvite) {
             fecharModalConvite();
         }
+        if (event.target === modalPermissoes) {
+            fecharModalPermissoes();
+        }
     });
+
+    // ===== FUNÇÕES DO MODAL DE PERMISSÕES =====
+    let participanteIdAtual = null;
+
+    function abrirModalPermissoes(participanteId, nomeUsuario) {
+        participanteIdAtual = participanteId;
+        document.getElementById('nomeUsuarioPermissoes').textContent = nomeUsuario;
+        document.getElementById('modalPermissoes').style.display = 'flex';
+        
+        // Carregar permissões atuais
+        carregarPermissoes(participanteId);
+    }
+
+    function fecharModalPermissoes() {
+        document.getElementById('modalPermissoes').style.display = 'none';
+        document.getElementById('formPermissoes').reset();
+        participanteIdAtual = null;
+    }
+
+    async function carregarPermissoes(participanteId) {
+        try {
+            const response = await fetch('/ambiente/{{ ambiente.id }}/participante/' + participanteId + '/permissoes/obter/');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('perm_visualizar').checked = data.pode_visualizar_atividades;
+                document.getElementById('perm_criar').checked = data.pode_criar_atividades;
+                document.getElementById('perm_editar').checked = data.pode_editar_atividades;
+                document.getElementById('perm_deletar').checked = data.pode_deletar_atividades;
+                
+                atualizarRoleDetectada();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar permissões:', error);
+            mostrarMensagem('error', 'Erro ao carregar permissões');
+        }
+    }
+
+    async function salvarPermissoes(event) {
+        event.preventDefault();
+        
+        if (!participanteIdAtual) return;
+        
+        const btnSalvar = document.getElementById('btnSalvarPermissoes');
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        
+        const permissoes = {
+            pode_visualizar_atividades: document.getElementById('perm_visualizar').checked,
+            pode_criar_atividades: document.getElementById('perm_criar').checked,
+            pode_editar_atividades: document.getElementById('perm_editar').checked,
+            pode_deletar_atividades: document.getElementById('perm_deletar').checked
+        };
+        
+        try {
+            const response = await fetch('/ambiente/{{ ambiente.id }}/participante/' + participanteIdAtual + '/permissoes/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify(permissoes)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                fecharModalPermissoes();
+                mostrarMensagem('success', data.message);
+                
+                // Recarregar página para atualizar a role exibida
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                mostrarMensagem('error', data.message);
+            }
+        } catch (error) {
+            console.error('Erro ao salvar permissões:', error);
+            mostrarMensagem('error', 'Erro ao salvar permissões');
+        } finally {
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar Permissões';
+        }
+    }
+
+    // Atualizar role detectada quando checkboxes mudarem
+    ['perm_criar', 'perm_editar', 'perm_deletar'].forEach(id => {
+        document.getElementById(id).addEventListener('change', atualizarRoleDetectada);
+    });
+
+    function atualizarRoleDetectada() {
+        const visualizar = document.getElementById('perm_visualizar').checked;
+        const criar = document.getElementById('perm_criar').checked;
+        const editar = document.getElementById('perm_editar').checked;
+        const deletar = document.getElementById('perm_deletar').checked;
+        
+        let role = 'Personalizado';
+        
+        // Leitor: apenas visualizar
+        if (visualizar && !criar && !editar && !deletar) {
+            role = 'Leitor';
+        }
+        // Editor: visualizar, criar e editar
+        else if (visualizar && criar && editar && !deletar) {
+            role = 'Editor';
+        }
+        // Administrador: todas as permissões
+        else if (visualizar && criar && editar && deletar) {
+            role = 'Administrador';
+        }
+        
+        document.getElementById('roleDetectada').textContent = role;
+    }
 </script>
 
 {% endblock %}

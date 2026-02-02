@@ -13,7 +13,7 @@ from ambiente.models import Ambiente
 import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import AmbientePermissionMixin
+from .mixins import AmbientePermissionMixin, AtividadePermissionMixin
 from rest_framework import viewsets, permissions
 from .serializers import ClienteSerializer, EnderecoSerializer
 
@@ -64,7 +64,7 @@ class EnderecoViewSet(viewsets.ReadOnlyModelViewSet):
 #     )
 #     return JsonResponse(list(enderecos), safe=False)
 
-class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, ListView):
+class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, ListView):
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
@@ -88,6 +88,10 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Lis
         ambiente = get_object_or_404(Ambiente, id=ambiente_id)
         context['ambiente'] = ambiente
         
+        # Adicionar permissões do usuário ao contexto
+        permissoes = self.get_user_permissions(ambiente)
+        context['user_permissions'] = permissoes
+        
         # Gerar dados para agenda
         hoje = timezone.now().date()
         atividades_por_dia = {}
@@ -102,7 +106,7 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Lis
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         return context
 
-class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, DetailView):
+class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DetailView):
     model = Atividade
     template_name = 'atividade/detalhe.html'
     context_object_name = 'atividade'
@@ -114,21 +118,42 @@ class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, DetailVie
         context['referencias'] = atividade.referencia_set.all()
         context['cliente'] = atividade.cliente
         if atividade.cliente:
-            context['enderecos'] = atividade.cliente.endereco_set.all()
+            context['enderecos'] = atividade.cliente.enderecos.all()
         else:
             context['enderecos'] = []
         # Passar o ambiente_id para o template poder voltar para a página correta
         if atividade.ambiente:
             context['ambiente_id'] = atividade.ambiente.id
+            # Adicionar permissões do usuário
+            context['user_permissions'] = self.get_user_permissions(atividade.ambiente)
         else:
             context['ambiente_id'] = None
         return context
 
-class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateView):
+class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, CreateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
     success_url = reverse_lazy('lista_atividades')
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Primeiro executa o dispatch do AmbientePermissionMixin
+        response = super().dispatch(request, *args, **kwargs)
+        if isinstance(response, JsonResponse) or hasattr(response, 'status_code'):
+            return response
+        
+        # Verificar permissão de criar
+        ambiente_id = request.GET.get('ambiente_id')
+        if ambiente_id:
+            try:
+                ambiente = Ambiente.objects.get(id=ambiente_id)
+                if not self.verificar_permissao_criar(ambiente):
+                    messages.error(request, 'Você não tem permissão para criar atividades neste ambiente.')
+                    return redirect('atividades_por_ambiente', ambiente_id=ambiente_id)
+            except Ambiente.DoesNotExist:
+                pass
+        
+        return response
     
     def get_success_url(self):
         ambiente_id = self.request.GET.get('ambiente_id')
@@ -245,11 +270,25 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, CreateVie
         context = self.get_context_data(form=form)
         return self.render_to_response(context)
 
-class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateView):
+class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, UpdateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = 'atividade/form.html'
     pk_url_kwarg = 'atividade_id'
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Primeiro executa o dispatch do AmbientePermissionMixin
+        response = super().dispatch(request, *args, **kwargs)
+        if isinstance(response, JsonResponse) or hasattr(response, 'status_code'):
+            return response
+        
+        # Verificar permissão de editar
+        atividade = self.get_object()
+        if not self.verificar_permissao_editar(atividade.ambiente):
+            messages.error(request, 'Você não tem permissão para editar atividades neste ambiente.')
+            return redirect('atividades_por_ambiente', ambiente_id=atividade.ambiente.id)
+        
+        return response
     
     def get_success_url(self):
         atividade = self.get_object()
@@ -346,12 +385,26 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, UpdateVie
         print(f"Referencia formset errors: {context['referencia_formset'].errors}")
         return self.render_to_response(context)
 
-class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, DeleteView):
+class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DeleteView):
     model = Atividade
     template_name = 'atividade/deletar.html'
     context_object_name = 'atividade'
     pk_url_kwarg = 'atividade_id'
     success_url = reverse_lazy('lista_atividades')
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Primeiro executa o dispatch do AmbientePermissionMixin
+        response = super().dispatch(request, *args, **kwargs)
+        if isinstance(response, JsonResponse) or hasattr(response, 'status_code'):
+            return response
+        
+        # Verificar permissão de deletar
+        atividade = self.get_object()
+        if not self.verificar_permissao_deletar(atividade.ambiente):
+            messages.error(request, 'Você não tem permissão para deletar atividades neste ambiente.')
+            return redirect('atividades_por_ambiente', ambiente_id=atividade.ambiente.id)
+        
+        return response
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

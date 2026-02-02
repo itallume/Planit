@@ -13,9 +13,10 @@ import secrets
 
 from ambiente.forms import AmbienteForm, SendInvitationForm
 from ambiente.serializers import AmbienteInvitationSerializer
-from ambiente.models import Ambiente, AmbienteInvitations
+from ambiente.models import Ambiente, AmbienteInvitations, Participante, Role
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
+import json
 # Create your views here.
 
 class AmbienteView:
@@ -103,7 +104,34 @@ class AmbienteView:
     def configurar_ambiente(request, ambiente_id):
         ambiente = Ambiente.objects.get(id=ambiente_id)
         users_participantes = ambiente.usuarios_participantes.all()
-        return render(request, 'ambiente/configurar.html', {'ambiente': ambiente, 'users_participantes': users_participantes})
+        
+        # Buscar participantes com suas roles
+        participantes_data = []
+        for user in users_participantes:
+            try:
+                participante = Participante.objects.get(usuario=user, ambiente=ambiente)
+                participantes_data.append({
+                    'user': user,
+                    'participante': participante
+                })
+            except Participante.DoesNotExist:
+                # Se não existir Participante, criar com role padrão (Leitor)
+                role_leitor = Role.objects.filter(ambiente=ambiente, nome=Role.LEITOR).first()
+                participante = Participante.objects.create(
+                    usuario=user,
+                    ambiente=ambiente,
+                    role=role_leitor
+                )
+                participantes_data.append({
+                    'user': user,
+                    'participante': participante
+                })
+        
+        return render(request, 'ambiente/configurar.html', {
+            'ambiente': ambiente, 
+            'users_participantes': users_participantes,
+            'participantes_data': participantes_data
+        })
     
   
 
@@ -197,7 +225,127 @@ class AmbienteInvitationViewSet(viewsets.ModelViewSet):
             'success': True,
             'message': f'Você recusou o convite para o ambiente "{ambiente_nome}".'
         }, status=status.HTTP_200_OK)
+
+
+@login_required
+def editar_permissoes_participante(request, ambiente_id, participante_id):
+    """
+    Edita as permissões de um participante no ambiente.
+    Recebe JSON com as permissões via POST.
+    """
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Método não permitido.'
+        }, status=405)
     
+    # Verificar se o usuário tem permissão para editar (deve ser administrador do ambiente)
+    ambiente = get_object_or_404(Ambiente, id=ambiente_id)
+    if ambiente.usuario_administrador != request.user:
+        return JsonResponse({
+            'success': False,
+            'message': 'Você não tem permissão para editar permissões neste ambiente.'
+        }, status=403)
+    
+    # Buscar o participante
+    participante = get_object_or_404(Participante, id=participante_id, ambiente=ambiente)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Extrair permissões do request
+        pode_visualizar = data.get('pode_visualizar_atividades', True)
+        pode_criar = data.get('pode_criar_atividades', False)
+        pode_editar = data.get('pode_editar_atividades', False)
+        pode_deletar = data.get('pode_deletar_atividades', False)
+        
+        # Verificar se é uma role predefinida ou criar custom
+        role_nome = None
+        
+        # Leitor: apenas visualizar
+        if pode_visualizar and not pode_criar and not pode_editar and not pode_deletar:
+            role_nome = Role.LEITOR
+        # Editor: visualizar, criar e editar
+        elif pode_visualizar and pode_criar and pode_editar and not pode_deletar:
+            role_nome = Role.EDITOR
+        # Administrador: todas as permissões
+        elif pode_visualizar and pode_criar and pode_editar and pode_deletar:
+            role_nome = Role.ADMINISTRADOR
+        # Custom: qualquer outra combinação
+        else:
+            role_nome = Role.CUSTOM
+        
+        # Buscar ou criar a role
+        if role_nome == Role.CUSTOM:
+            # Para custom, criar uma nova role ou atualizar a existente se for custom
+            if participante.role and participante.role.nome == Role.CUSTOM:
+                # Atualizar role custom existente
+                role = participante.role
+                role.pode_visualizar_atividades = pode_visualizar
+                role.pode_criar_atividades = pode_criar
+                role.pode_editar_atividades = pode_editar
+                role.pode_deletar_atividades = pode_deletar
+                role.save()
+            else:
+                # Criar nova role custom
+                role = Role.objects.create(
+                    nome=Role.CUSTOM,
+                    ambiente=ambiente,
+                    pode_visualizar_atividades=pode_visualizar,
+                    pode_criar_atividades=pode_criar,
+                    pode_editar_atividades=pode_editar,
+                    pode_deletar_atividades=pode_deletar
+                )
+        else:
+            # Buscar role predefinida
+            role = Role.objects.get(ambiente=ambiente, nome=role_nome)
+        
+        # Atualizar participante
+        participante.role = role
+        participante.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Permissões de {participante.usuario.username} atualizadas com sucesso.',
+            'role': role.get_nome_display()
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Dados inválidos.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erro ao atualizar permissões: {str(e)}'
+        }, status=500)
 
 
-   
+@login_required
+def obter_permissoes_participante(request, ambiente_id, participante_id):
+    """
+    Retorna as permissões atuais de um participante.
+    """
+    ambiente = get_object_or_404(Ambiente, id=ambiente_id)
+    participante = get_object_or_404(Participante, id=participante_id, ambiente=ambiente)
+    
+    if not participante.role:
+        # Se não tem role, retornar permissões padrão (Leitor)
+        return JsonResponse({
+            'success': True,
+            'pode_visualizar_atividades': True,
+            'pode_criar_atividades': False,
+            'pode_editar_atividades': False,
+            'pode_deletar_atividades': False,
+            'role': 'Leitor'
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'pode_visualizar_atividades': participante.role.pode_visualizar_atividades,
+        'pode_criar_atividades': participante.role.pode_criar_atividades,
+        'pode_editar_atividades': participante.role.pode_editar_atividades,
+        'pode_deletar_atividades': participante.role.pode_deletar_atividades,
+        'role': participante.role.get_nome_display()
+    })

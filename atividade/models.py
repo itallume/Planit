@@ -18,6 +18,7 @@ class Atividade(models.Model):
     ambiente = models.ForeignKey('ambiente.Ambiente', on_delete=models.CASCADE)
     descricao = models.TextField(blank=True, null=True)
     cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)
+    responsaveis = models.ManyToManyField('auth.User', related_name='atividades_responsaveis', blank=True)
 
     def __str__(self):
         return self.descricao[:50]
