@@ -455,20 +455,36 @@
                                         <strong>{{ invitation.inviter.username }}</strong> convidou você para o ambiente <strong>{{ invitation.ambiente.nome }}</strong>
                                     </div>
                                     <div class="notification-actions">
-                                        <form method="POST" action="{% url 'aceitar_convite' %}" style="display: inline;">
+                                        <!-- <form method="POST" action="{% url 'aceitar_convite' invitation.id %}" style="display: inline;">
                                             {% csrf_token %}
                                             <input type="hidden" name="token" value="{{ invitation.token }}">
                                             <button type="submit" class="btn-accept">
                                                 <i class="fas fa-check"></i> Aceitar
                                             </button>
-                                        </form>
-                                        <form method="POST" action="{% url 'recusar_convite' %}" style="display: inline;">
+                                        </form> -->
+                                        <button 
+                                            class="btn-accept"
+                                            data-url="{% url 'aceitar_convite' invitation.id %}"
+                                            onclick="postAction(this.dataset.url)">
+                                            <i class="fas fa-check"></i> Aceitar
+                                        </button>
+
+                                        <!-- <form method="POST" action="{% url 'recusar_convite' invitation.id %}" style="display: inline;">
                                             {% csrf_token %}
                                             <input type="hidden" name="token" value="{{ invitation.token }}">
                                             <button type="submit" class="btn-decline">
                                                 <i class="fas fa-times"></i> Recusar
                                             </button>
-                                        </form>
+                                        </form> -->
+                                
+                                        <button
+                                            class="btn-decline"
+                                            data-url="{% url 'recusar_convite' invitation.id %}"
+                                            onclick="postAction(this.dataset.url)">
+                                            <i class="fas fa-times"></i> Recusar
+                                        </button>
+
+
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -566,5 +582,25 @@
             }
         });
     </script>
+    <script>
+        function postAction(url) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // aqui você controla a UX
+                window.location.reload()
+            })
+        }
+
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    </script>
+
 </body>
 </html>
