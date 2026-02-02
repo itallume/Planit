@@ -1,13 +1,18 @@
-from pyexpat.errors import messages
-from urllib import request
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.views.generic import DetailView, CreateView
+from django.http import JsonResponse
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 import secrets
 
 from ambiente.forms import AmbienteForm, SendInvitationForm
+from ambiente.serializers import AmbienteInvitationSerializer
 from ambiente.models import Ambiente, AmbienteInvitations
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
@@ -102,42 +107,98 @@ class AmbienteView:
             ambiente.delete()
             return redirect('lista_ambientes')
         return redirect('lista_ambientes')
-    
-class CreateAmbienteInvitationView(LoginRequiredMixin, CreateView):
-    model = AmbienteInvitations
-    form_class = SendInvitationForm
-    template_name = 'ambiente/send_invitation.html'
 
-    def post(self, request, ambiente_id):
+
+class AmbienteInvitationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciar convites de ambiente.
+    
+    Actions:
+    - create: Envia um novo convite (POST)
+    - list: Lista convites pendentes do usuário (GET)
+    - accept: Aceita um convite (POST /invitations/{id}/accept/)
+    - decline: Recusa um convite (POST /invitations/{id}/decline/)
+    """
+    serializer_class = AmbienteInvitationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Retorna apenas convites do usuário logado"""
+        return AmbienteInvitations.objects.filter(
+            guest=self.request.user,
+            accepted=False
+        ).select_related('inviter', 'ambiente')
+    
+    def create(self, request, ambiente_id=None):
+        """Envia um convite para o ambiente"""
         ambiente = get_object_or_404(Ambiente, id=ambiente_id)
-        email = request.POST.get('email')
         
-        token = secrets.token_hex(32)
-
-        guest = User.objects.filter(email=email).first()
-        if not guest:
-            messages.error(request, 'Usuário com este email não encontrado.')
-            return redirect('lista_ambientes', ambiente_id=ambiente.id)
+        if ambiente.usuario_administrador != request.user and not ambiente.usuarios_participantes.filter(id=request.user.id).exists():
+            return Response({
+                'success': False,
+                'message': 'Você não tem permissão para enviar convites neste ambiente.'
+            }, status=status.HTTP_403_FORBIDDEN)
         
-        invitation = AmbienteInvitations.objects.create(
-            inviter=request.user,
-            ambiente=ambiente,
-            email=email,
-            token=token,
-            guest=guest
+        serializer = AmbienteInvitationSerializer(
+            data=request.data,
+            context={'ambiente': ambiente, 'inviter': request.user}
         )
-        messages.success(request, f'Convite para {email} enviado com sucesso.')
-        return redirect('lista_ambientes', ambiente_id=ambiente.id)
-    
-    
-class AcceptAmbienteInvitationView(LoginRequiredMixin, View):
-    def post(self, request, token):
-        convite = get_object_or_404(AmbienteInvitations, token=token, guest=request.user, accepted=False)
-        ambiente = convite.ambiente
-        ambiente.usuarios_participantes.add(request.user)
-        convite.accepted = True
-        convite.save()
         
-        return redirect('lista_ambientes')
+        if serializer.is_valid():
+            invitation = serializer.save()
+            return Response({
+                'success': True,
+                'message': f'Convite para {invitation.email} enviado com sucesso.'
+            }, status=status.HTTP_201_CREATED)
+        
+        errors = serializer.errors
+        error_message = errors.get('email', ['Erro ao enviar convite.'])[0]
+        
+        return Response({
+            'success': False,
+            'message': error_message
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        """Aceita um convite"""
+        invitation = self.get_object()
+        
+        if invitation.accepted:
+            return Response({
+                'success': False,
+                'message': 'Este convite já foi aceito.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        ambiente = invitation.ambiente
+        ambiente.usuarios_participantes.add(request.user)
+        invitation.accepted = True
+        invitation.save()
+        
+        return Response({
+            'success': True,
+            'message': f'Você agora faz parte do ambiente "{ambiente.nome}"!'
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def decline(self, request, pk=None):
+        """Recusa um convite"""
+        invitation = self.get_object()
+        
+        if invitation.accepted:
+            return Response({
+                'success': False,
+                'message': 'Este convite já foi aceito.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        ambiente_nome = invitation.ambiente.nome
+        invitation.delete()
+        
+        return Response({
+            'success': True,
+            'message': f'Você recusou o convite para o ambiente "{ambiente_nome}".'
+        }, status=status.HTTP_200_OK)
+    
+
 
     
