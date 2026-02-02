@@ -9,9 +9,6 @@
     }
 
     .config-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         margin-bottom: 30px;
         padding-bottom: 20px;
         border-bottom: 2px solid rgba(163, 204, 171, 0.2);
@@ -20,7 +17,7 @@
     .config-header h1 {
         color: var(--text-light);
         font-size: 2rem;
-        margin: 0;
+        margin: 0 0 12px 0;
     }
 
     .btn-voltar {
@@ -34,6 +31,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        margin-bottom: 30px;
     }
 
     .btn-voltar:hover {
@@ -437,17 +435,12 @@
 <div class="config-container">
     <div class="config-header">
         <h1>Configurações: {{ ambiente.nome }}</h1>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <button onclick="abrirModalConvite()" class="btn-adicionar-colaborador">
-                <i class="fas fa-user-plus"></i>
-                Adicionar Colaborador
-            </button>
-            <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-voltar">
-                <i class="fas fa-arrow-left"></i>
-                Voltar
-            </a>
-        </div>
+      
     </div>
+    <a href="{% url 'atividades_por_ambiente' ambiente.id %}" class="btn-voltar">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+    </a>
 
     <!-- Seção de Time -->
     <div class="config-section">
@@ -458,6 +451,11 @@
         <p class="section-description">
             Visualize e gerencie os membros do ambiente
         </p>
+
+        <button onclick="abrirModalConvite()" class="btn-adicionar-colaborador" style="margin-bottom: 20px;">
+            <i class="fas fa-user-plus"></i>
+            Adicionar Colaborador
+        </button>
 
         <div class="member-list">
             <!-- Administrador -->
