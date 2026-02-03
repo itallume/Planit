@@ -1,4 +1,8 @@
-from .views import  AmbienteView, AmbienteInvitationViewSet, editar_permissoes_participante, obter_permissoes_participante
+from .views import (
+    AmbienteView, AmbienteInvitationViewSet, editar_permissoes_participante, 
+    obter_permissoes_participante, listar_notificacoes, marcar_notificacao_lida,
+    marcar_todas_lidas, contagem_notificacoes
+)
 from django.urls import include, path
 
 invitation_create = AmbienteInvitationViewSet.as_view({
@@ -24,4 +28,10 @@ urlpatterns = [
     path('<int:ambiente_id>/participante/<int:participante_id>/permissoes/obter/', obter_permissoes_participante, name='obter_permissoes'),
     path('convite/<int:pk>/aceitar/', invitation_accept, name='aceitar_convite'),
     path('convite/<int:pk>/recusar/', invitation_decline, name='recusar_convite'),
+    
+    # Notificações
+    path('notificacoes/', listar_notificacoes, name='notificacoes'),
+    path('notificacoes/<int:notificacao_id>/ler/', marcar_notificacao_lida, name='marcar_notificacao_lida'),
+    path('notificacoes/marcar-todas-lidas/', marcar_todas_lidas, name='marcar_todas_lidas'),
+    path('notificacoes/contagem/', contagem_notificacoes, name='contagem_notificacoes'),
 ]

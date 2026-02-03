@@ -448,6 +448,73 @@
         box-shadow: 0 4px 12px rgba(52, 103, 92, 0.3);
     }
 
+    .participante-item {
+        background: rgba(163, 204, 171, 0.05);
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid rgba(163, 204, 171, 0.15);
+        margin-bottom: 10px;
+    }
+
+    .participante-item .form-row {
+        margin-bottom: 0;
+    }
+
+    .participante-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 2px solid rgba(163, 204, 171, 0.2);
+        border-radius: 6px;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .participante-select:focus {
+        outline: none;
+        border-color: var(--green-medium);
+        background: rgba(163, 204, 171, 0.1);
+        box-shadow: 0 0 0 3px rgba(52, 103, 92, 0.2);
+    }
+
+    .participante-select option {
+        background: #1a1a16;
+        color: var(--text-light);
+        padding: 10px;
+    }
+
+    .participante-select option:hover,
+    .participante-select option:checked {
+        background: rgba(242, 104, 0, 0.2);
+        color: var(--primary-orange);
+    }
+
+    .participante-select option:disabled {
+        color: rgba(163, 204, 171, 0.3);
+        background: rgba(163, 204, 171, 0.05);
+    }
+
+    .btn-remove-participante {
+        background: var(--status-delayed);
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .btn-remove-participante:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+
     .form-actions {
         display: flex;
         justify-content: flex-end;
@@ -632,6 +699,96 @@
         border-radius: 4px;
     }
 
+    /* Participante Dropdown - Mesmo estilo de clientes */
+    .participante-search-container {
+        position: relative;
+    }
+
+    .participante-search-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid rgba(163, 204, 171, 0.2);
+        border-radius: 6px;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .participante-search-input:focus {
+        outline: none;
+        border-color: var(--green-medium);
+        background: rgba(163, 204, 171, 0.1);
+        box-shadow: 0 0 0 3px rgba(52, 103, 92, 0.2);
+    }
+
+    .participante-search-input::placeholder {
+        color: rgba(163, 204, 171, 0.5);
+    }
+
+    .participante-results-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #1a1a16;
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 10;
+        display: none;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .participante-results-dropdown::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .participante-results-dropdown::-webkit-scrollbar-track {
+        background: rgba(163, 204, 171, 0.1);
+        border-radius: 3px;
+    }
+
+    .participante-results-dropdown::-webkit-scrollbar-thumb {
+        background: var(--green-medium);
+        border-radius: 3px;
+    }
+
+    .participante-results-dropdown::-webkit-scrollbar-thumb:hover {
+        background: var(--green-light);
+    }
+
+    .participante-results-dropdown.visible {
+        display: block;
+    }
+
+    .participante-result-item {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(163, 204, 171, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .participante-result-item:hover {
+        background: rgba(242, 104, 0, 0.1);
+    }
+
+    .participante-result-item strong {
+        display: block;
+        color: var(--primary-orange);
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+
+    .participante-result-item small {
+        color: rgba(163, 204, 171, 0.7);
+        font-size: 12px;
+    }
+
+
     @media (max-width: 768px) {
         .form-row,
         .form-row-3 {
@@ -683,6 +840,7 @@
         <button type="button" class="tab-btn" data-tab="tab-cliente"><i class="fas fa-user"></i> Cliente</button>
         <button type="button" class="tab-btn" data-tab="tab-endereco"><i class="fas fa-map-marker-alt"></i> Endereços</button>
         <button type="button" class="tab-btn" data-tab="tab-referencias"><i class="fas fa-paperclip"></i> Referências</button>
+        <button type="button" class="tab-btn" data-tab="tab-participantes"><i class="fas fa-users"></i> Participantes</button>
     </div>
 
     <form method="POST" enctype="multipart/form-data">
@@ -1032,6 +1190,58 @@
                         </div>
                     </div>
                 </template>
+            </div>
+        </div>
+
+        <!-- TAB 5: Participantes -->
+        <div id="tab-participantes" class="tab-content">
+            <div class="form-section">
+                <h3>Alocar Participantes</h3>
+                <p style="color: rgba(163, 204, 171, 0.7); margin-bottom: 20px;">Selecione os participantes do ambiente que trabalharão nesta atividade</p>
+                
+                <div id="participantes-container" class="formset-container">
+                    <!-- Participantes serão adicionados aqui dinamicamente -->
+                </div>
+                
+                <button type="button" id="add-participante" class="btn-add" style="margin-top: 15px;">
+                    <i class="fas fa-plus"></i> Adicionar Participante
+                </button>
+
+                <template id="participante-template">
+                    <div class="formset-item participante-item">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Participante</label>
+                                <div class="search-container participante-search-container">
+                                    <input 
+                                        type="text" 
+                                        class="participante-search-input" 
+                                        placeholder="Digite o nome do participante..." 
+                                        autocomplete="off"
+                                    />
+                                    <input type="hidden" name="participantes" class="participante-id-input" />
+                                    <div class="participante-results-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="delete-row">
+                            <button type="button" class="btn-remove-participante">Remover</button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Template de dados dos participantes para JS -->
+                <script type="application/json" id="participantes-data">
+                    [
+                        {% for participante in participantes_ambiente %}
+                        {
+                            "id": {{ participante.id }},
+                            "nome": "{{ participante.usuario.get_full_name|default:participante.usuario.username }}",
+                            "role": "{% if participante.role %}{{ participante.role.get_nome_display }}{% else %}Sem role{% endif %}"
+                        }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                </script>
             </div>
         </div>
 
@@ -1415,6 +1625,162 @@
 
     initFormset('endereco', 'add-endereco', 'enderecos-container', 'endereco-prototype');
     initFormset('referencia', 'add-referencia', 'referencias-container', 'referencia-prototype');
+
+    // === Sistema de Participantes (estilo dropdown como clientes) ===
+    const participantesContainer = document.getElementById('participantes-container');
+    const addParticipanteBtn = document.getElementById('add-participante');
+    const participanteTemplate = document.getElementById('participante-template');
+    
+    // Carregar dados dos participantes disponíveis
+    const participantesData = JSON.parse(document.getElementById('participantes-data').textContent);
+    
+    // Participantes já alocados (para edição)
+    const participantesAlocados = {{ participantes_alocados|default:"[]"|safe }};
+    
+    // IDs já selecionados (controle global)
+    let participantesSelecionados = [];
+    
+    // Adicionar participantes já alocados ao carregar a página
+    if (participantesAlocados && participantesAlocados.length > 0) {
+        participantesAlocados.forEach(participanteId => {
+            adicionarParticipante(participanteId);
+        });
+    }
+    
+    function adicionarParticipante(preSelectedId = null) {
+        const newItem = participanteTemplate.content.cloneNode(true);
+        const container = newItem.querySelector('.participante-item');
+        const searchInput = container.querySelector('.participante-search-input');
+        const hiddenInput = container.querySelector('.participante-id-input');
+        const dropdown = container.querySelector('.participante-results-dropdown');
+        
+        // Se tem valor pré-selecionado, popular
+        if (preSelectedId) {
+            const participante = participantesData.find(p => p.id === preSelectedId);
+            if (participante) {
+                searchInput.value = participante.nome;
+                hiddenInput.value = participante.id;
+                participantesSelecionados.push(participante.id);
+            }
+        }
+        
+        participantesContainer.appendChild(container);
+        
+        // Configurar eventos para este item
+        configurarEventosParticipante(container);
+    }
+    
+    function configurarEventosParticipante(container) {
+        const searchInput = container.querySelector('.participante-search-input');
+        const hiddenInput = container.querySelector('.participante-id-input');
+        const dropdown = container.querySelector('.participante-results-dropdown');
+        let searchTimeout;
+        
+        // Buscar ao digitar
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                mostrarResultadosParticipantes(query, dropdown, searchInput, hiddenInput);
+            }, 300);
+        });
+        
+        // Mostrar todos ao focar
+        searchInput.addEventListener('focus', (e) => {
+            if (e.target.value.trim().length === 0) {
+                mostrarResultadosParticipantes('', dropdown, searchInput, hiddenInput);
+            }
+        });
+        
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) {
+                dropdown.classList.remove('visible');
+            }
+        });
+    }
+    
+    function mostrarResultadosParticipantes(query, dropdown, searchInput, hiddenInput) {
+        // Filtrar participantes disponíveis (não selecionados em outros campos)
+        const currentId = parseInt(hiddenInput.value);
+        const outrosIds = participantesSelecionados.filter(id => id !== currentId);
+        
+        let resultados = participantesData.filter(p => {
+            // Não mostrar os já selecionados em outros campos
+            if (outrosIds.includes(p.id)) return false;
+            
+            // Se tem query, filtrar por nome
+            if (query) {
+                return p.nome.toLowerCase().includes(query) || 
+                       p.role.toLowerCase().includes(query);
+            }
+            return true;
+        });
+        
+        dropdown.innerHTML = '';
+        
+        if (resultados.length === 0) {
+            dropdown.innerHTML = '<div style="padding: 12px; color: rgba(163, 204, 171, 0.5);">Nenhum participante encontrado</div>';
+        } else {
+            resultados.forEach(participante => {
+                const item = document.createElement('div');
+                item.className = 'participante-result-item';
+                item.dataset.id = participante.id;
+                item.innerHTML = `
+                    <strong>${participante.nome}</strong>
+                    <small>${participante.role}</small>
+                `;
+                
+                item.addEventListener('click', () => {
+                    // Remover ID antigo se existir
+                    if (hiddenInput.value) {
+                        const oldId = parseInt(hiddenInput.value);
+                        participantesSelecionados = participantesSelecionados.filter(id => id !== oldId);
+                    }
+                    
+                    // Adicionar novo ID
+                    searchInput.value = participante.nome;
+                    hiddenInput.value = participante.id;
+                    participantesSelecionados.push(participante.id);
+                    
+                    dropdown.classList.remove('visible');
+                });
+                
+                dropdown.appendChild(item);
+            });
+        }
+        
+        dropdown.classList.add('visible');
+    }
+    
+    addParticipanteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        adicionarParticipante();
+    });
+    
+    // Event delegation para remover participantes
+    participantesContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-remove-participante')) {
+            e.preventDefault();
+            const container = e.target.closest('.participante-item');
+            const hiddenInput = container.querySelector('.participante-id-input');
+            
+            // Remover ID da lista de selecionados
+            if (hiddenInput.value) {
+                const id = parseInt(hiddenInput.value);
+                participantesSelecionados = participantesSelecionados.filter(pId => pId !== id);
+            }
+            
+            container.remove();
+        }
+    });
 
     // Máscara de telefone
     const telefoneInput = document.getElementById('id_cliente-telefone');

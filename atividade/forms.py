@@ -2,6 +2,7 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
 from atividade.models import Atividade, Cliente, Endereco, Referencia
+from ambiente.models import Participante
 
 
 class AtividadeForm(forms.ModelForm):

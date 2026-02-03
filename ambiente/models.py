@@ -91,3 +91,33 @@ class Participante(models.Model):
     def __str__(self):
         role_nome = self.role.get_nome_display() if self.role else 'Sem role'
         return f"{self.usuario.username} - {self.ambiente.nome} ({role_nome})"
+
+
+class Notificacao(models.Model):
+    """
+    Notificações para usuários sobre ações no sistema.
+    """
+    TIPO_ALOCACAO_ATIVIDADE = 'alocacao_atividade'
+    TIPO_CHOICES = [
+        (TIPO_ALOCACAO_ATIVIDADE, 'Alocação em Atividade'),
+    ]
+    
+    usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='notificacoes')
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
+    titulo = models.CharField(max_length=200)
+    mensagem = models.TextField()
+    link = models.CharField(max_length=500, blank=True)  # URL para onde redirecionar ao clicar
+    lida = models.BooleanField(default=False)
+    criada_em = models.DateTimeField(auto_now_add=True)
+    
+    # Referências opcionais
+    atividade = models.ForeignKey('atividade.Atividade', on_delete=models.CASCADE, null=True, blank=True, related_name='notificacoes')
+    ambiente = models.ForeignKey(Ambiente, on_delete=models.CASCADE, null=True, blank=True, related_name='notificacoes')
+    
+    class Meta:
+        ordering = ['-criada_em']
+        verbose_name = 'Notificação'
+        verbose_name_plural = 'Notificações'
+    
+    def __str__(self):
+        return f"{self.usuario.username} - {self.titulo}"

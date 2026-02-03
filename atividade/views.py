@@ -16,6 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import AmbientePermissionMixin, AtividadePermissionMixin
 from rest_framework import viewsets, permissions
 from .serializers import ClienteSerializer, EnderecoSerializer
+from django.contrib import messages
 
 class ClienteViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cliente.objects.all()
@@ -216,6 +217,25 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             context['cliente_form'] = ClienteForm(prefix='cliente')
             context['endereco_formset'] = EnderecoFormSet(prefix='endereco')
             context['referencia_formset'] = ReferenciaFormSet(prefix='referencia')
+        
+        # Adicionar lista de participantes do ambiente
+        if ambiente_id:
+            from ambiente.models import Participante, Role
+            
+            # Garantir que todos os usuários participantes tenham um objeto Participante
+            ambiente_obj = Ambiente.objects.get(id=ambiente_id)
+            for user in ambiente_obj.usuarios_participantes.all():
+                role_leitor = Role.objects.filter(ambiente=ambiente_obj, nome=Role.LEITOR).first()
+                Participante.objects.get_or_create(
+                    usuario=user,
+                    ambiente=ambiente_obj,
+                    defaults={'role': role_leitor}
+                )
+            
+            context['participantes_ambiente'] = Participante.objects.filter(
+                ambiente_id=ambiente_id
+            ).select_related('usuario', 'role')
+        
         return context
     
     def form_valid(self, form):
@@ -281,6 +301,38 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             self.object.cliente = cliente
         self.object.save()
         
+        # Processar participantes alocados
+        participantes_ids = self.request.POST.getlist('participantes')
+        novos_participantes = []
+        if participantes_ids:
+            from ambiente.models import Participante
+            participantes = Participante.objects.filter(
+                id__in=participantes_ids,
+                ambiente=ambiente
+            )
+            self.object.participantes_alocados.set(participantes)
+            novos_participantes = list(participantes)
+        else:
+            self.object.participantes_alocados.clear()
+        
+        # Criar notificações para os participantes alocados
+        if novos_participantes:
+            from ambiente.models import Notificacao
+            from django.urls import reverse
+            
+            descricao_curta = (self.object.descricao[:50] + '...') if self.object.descricao and len(self.object.descricao) > 50 else (self.object.descricao or 'Sem descrição')
+            
+            for participante in novos_participantes:
+                Notificacao.objects.create(
+                    usuario=participante.usuario,
+                    tipo=Notificacao.TIPO_ALOCACAO_ATIVIDADE,
+                    titulo=f'Você foi alocado em uma atividade',
+                    mensagem=f'Você foi alocado na atividade "{descricao_curta}" no ambiente "{ambiente.nome}".',
+                    link=reverse('detalhe_atividade', kwargs={'atividade_id': self.object.id}),
+                    atividade=self.object,
+                    ambiente=ambiente
+                )
+        
         referencia_formset.instance = self.object
         referencia_formset.save()
         
@@ -339,6 +391,26 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         
         context['atividade'] = atividade
         context['ambiente'] = atividade.ambiente
+        
+        # Adicionar lista de participantes do ambiente
+        from ambiente.models import Participante, Role
+        
+        # Garantir que todos os usuários participantes tenham um objeto Participante
+        for user in atividade.ambiente.usuarios_participantes.all():
+            role_leitor = Role.objects.filter(ambiente=atividade.ambiente, nome=Role.LEITOR).first()
+            Participante.objects.get_or_create(
+                usuario=user,
+                ambiente=atividade.ambiente,
+                defaults={'role': role_leitor}
+            )
+        
+        context['participantes_ambiente'] = Participante.objects.filter(
+            ambiente=atividade.ambiente
+        ).select_related('usuario', 'role')
+        
+        # Adicionar participantes já alocados
+        context['participantes_alocados'] = list(atividade.participantes_alocados.values_list('id', flat=True))
+        
         return context
     
     def form_valid(self, form):
@@ -389,6 +461,43 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         if cliente:
             self.object.cliente = cliente
             self.object.save()
+        
+        # Processar participantes alocados
+        participantes_ids = self.request.POST.getlist('participantes')
+        participantes_antigos = set(self.object.participantes_alocados.all())
+        novos_participantes = []
+        
+        if participantes_ids:
+            from ambiente.models import Participante
+            participantes = Participante.objects.filter(
+                id__in=participantes_ids,
+                ambiente=self.object.ambiente
+            )
+            self.object.participantes_alocados.set(participantes)
+            
+            # Identificar apenas os participantes que foram adicionados agora
+            participantes_atuais = set(participantes)
+            novos_participantes = list(participantes_atuais - participantes_antigos)
+        else:
+            self.object.participantes_alocados.clear()
+        
+        # Criar notificações apenas para os novos participantes
+        if novos_participantes:
+            from ambiente.models import Notificacao
+            from django.urls import reverse
+            
+            descricao_curta = (self.object.descricao[:50] + '...') if self.object.descricao and len(self.object.descricao) > 50 else (self.object.descricao or 'Sem descrição')
+            
+            for participante in novos_participantes:
+                Notificacao.objects.create(
+                    usuario=participante.usuario,
+                    tipo=Notificacao.TIPO_ALOCACAO_ATIVIDADE,
+                    titulo=f'Você foi alocado em uma atividade',
+                    mensagem=f'Você foi alocado na atividade "{descricao_curta}" no ambiente "{self.object.ambiente.nome}".',
+                    link=reverse('detalhe_atividade', kwargs={'atividade_id': self.object.id}),
+                    atividade=self.object,
+                    ambiente=self.object.ambiente
+                )
         
         referencia_formset.instance = self.object
         referencia_formset.save()
@@ -465,5 +574,3 @@ def download_referencia(request, referencia_id: int):
         filename=filename,
         content_type=content_type,
     )
-
-

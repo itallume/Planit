@@ -27,8 +27,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    stdin_open: true
-    tty: true
 
 volumes:
   postgres_data:

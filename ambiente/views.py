@@ -202,6 +202,14 @@ class AmbienteInvitationViewSet(viewsets.ModelViewSet):
         invitation.accepted = True
         invitation.save()
         
+        # Criar Participante com role Leitor por padrão
+        role_leitor = Role.objects.filter(ambiente=ambiente, nome=Role.LEITOR).first()
+        Participante.objects.get_or_create(
+            usuario=request.user,
+            ambiente=ambiente,
+            defaults={'role': role_leitor}
+        )
+        
         return Response({
             'success': True,
             'message': f'Você agora faz parte do ambiente "{ambiente.nome}"!'
@@ -358,3 +366,66 @@ def obter_permissoes_participante(request, ambiente_id, participante_id):
         'pode_deletar_atividades': participante.role.pode_deletar_atividades,
         'role': participante.role.get_nome_display()
     })
+
+
+# === Views de Notificações ===
+
+@login_required
+def listar_notificacoes(request):
+    """Lista todas as notificações do usuário."""
+    from ambiente.models import Notificacao
+    
+    notificacoes = Notificacao.objects.filter(usuario=request.user)
+    nao_lidas = notificacoes.filter(lida=False)
+    
+    return render(request, 'ambiente/notificacoes.html', {
+        'notificacoes': notificacoes,
+        'nao_lidas_count': nao_lidas.count()
+    })
+
+
+@login_required
+def marcar_notificacao_lida(request, notificacao_id):
+    """Marca uma notificação como lida. GET redireciona, POST retorna JSON."""
+    from ambiente.models import Notificacao
+    
+    notificacao = get_object_or_404(Notificacao, id=notificacao_id, usuario=request.user)
+    notificacao.lida = True
+    notificacao.save()
+    
+    # Se for POST (via AJAX), retorna JSON
+    if request.method == 'POST':
+        return JsonResponse({
+            'success': True,
+            'message': 'Notificação marcada como lida.'
+        })
+    
+    # Se for GET, redirecionar para o link da notificação
+    if notificacao.link:
+        return redirect(notificacao.link)
+    else:
+        return redirect('lista_ambientes')
+
+
+@login_required
+def marcar_todas_lidas(request):
+    """Marca todas as notificações como lidas."""
+    from ambiente.models import Notificacao
+    
+    if request.method == 'POST':
+        Notificacao.objects.filter(usuario=request.user, lida=False).update(lida=True)
+        return JsonResponse({
+            'success': True,
+            'message': 'Todas as notificações foram marcadas como lidas.'
+        })
+    
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+
+@login_required
+def contagem_notificacoes(request):
+    """Retorna a contagem de notificações não lidas (para uso em AJAX)."""
+    from ambiente.models import Notificacao
+    
+    count = Notificacao.objects.filter(usuario=request.user, lida=False).count()
+    return JsonResponse({'count': count})

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ambiente, AmbienteInvitations, Role, Participante
+from .models import Ambiente, AmbienteInvitations, Role, Participante, Notificacao
 
 # Register your models here.
 
@@ -28,3 +28,10 @@ class ParticipanteAdmin(admin.ModelAdmin):
     list_filter = ['role', 'data_entrada']
     search_fields = ['usuario__username', 'ambiente__nome']
     raw_id_fields = ['usuario', 'ambiente', 'role']
+
+@admin.register(Notificacao)
+class NotificacaoAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'tipo', 'titulo', 'lida', 'criada_em']
+    list_filter = ['tipo', 'lida', 'criada_em']
+    search_fields = ['usuario__username', 'titulo', 'mensagem']
+    raw_id_fields = ['usuario', 'atividade', 'ambiente']

@@ -364,6 +364,27 @@
                         <div class="vazio">Nenhuma referência visual cadastrada.</div>
                     {% endif %}
                 </div>
+
+                <!-- Seção de Participantes Alocados -->
+                <div class="section" style="margin-top: 24px;">
+                    <h2><i class="fas fa-users"></i> Participantes Alocados</h2>
+                    {% if atividade.participantes_alocados.all %}
+                        {% for participante in atividade.participantes_alocados.all %}
+                            <div class="campo">
+                                <div class="label"><i class="fas fa-user-circle"></i> {{ participante.usuario.get_full_name|default:participante.usuario.username }}</div>
+                                <div class="valor">
+                                    {% if participante.role %}
+                                        {{ participante.role.get_nome_display }}
+                                    {% else %}
+                                        Sem role definida
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="vazio">Nenhum participante alocado.</div>
+                    {% endif %}
+                </div>
             </div>
             
             <!-- Coluna Lateral -->

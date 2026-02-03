@@ -434,10 +434,10 @@
 
             <!-- User Menu -->
             <div class="user-menu">
-                <!-- Notifications Bell -->
+                <!-- Invitations Bell -->
                 <div style="position: relative;">
                     <div class="notifications-bell" onclick="toggleNotifications()" id="notificationsBell">
-                        <i class="fas fa-bell"></i>
+                        <i class="fas fa-envelope"></i>
                         {% if invitations_count > 0 %}
                         <span class="notification-badge">{{ invitations_count }}</span>
                         {% endif %}
@@ -445,7 +445,7 @@
                     
                     <div class="notifications-dropdown" id="notificationsDropdown">
                         <div class="notifications-header">
-                            Notificações
+                            Convites
                         </div>
                         <div class="notifications-list">
                             {% if pending_invitations %}
@@ -455,27 +455,12 @@
                                         <strong>{{ invitation.inviter.username }}</strong> convidou você para o ambiente <strong>{{ invitation.ambiente.nome }}</strong>
                                     </div>
                                     <div class="notification-actions">
-                                        <!-- <form method="POST" action="{% url 'aceitar_convite' invitation.id %}" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="token" value="{{ invitation.token }}">
-                                            <button type="submit" class="btn-accept">
-                                                <i class="fas fa-check"></i> Aceitar
-                                            </button>
-                                        </form> -->
                                         <button 
                                             class="btn-accept"
                                             data-url="{% url 'aceitar_convite' invitation.id %}"
                                             onclick="postAction(this.dataset.url)">
                                             <i class="fas fa-check"></i> Aceitar
                                         </button>
-
-                                        <!-- <form method="POST" action="{% url 'recusar_convite' invitation.id %}" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="token" value="{{ invitation.token }}">
-                                            <button type="submit" class="btn-decline">
-                                                <i class="fas fa-times"></i> Recusar
-                                            </button>
-                                        </form> -->
                                 
                                         <button
                                             class="btn-decline"
@@ -483,14 +468,70 @@
                                             onclick="postAction(this.dataset.url)">
                                             <i class="fas fa-times"></i> Recusar
                                         </button>
-
-
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
                                 <div class="notifications-empty">
                                     <i class="fas fa-inbox"></i>
+                                    <div>Nenhum convite</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- General Notifications Bell -->
+                <div style="position: relative;">
+                    <div class="notifications-bell" onclick="toggleGeneralNotifications()" id="generalNotificationsBell">
+                        <i class="fas fa-bell"></i>
+                        {% if notificacoes_nao_lidas_count > 0 %}
+                        <span class="notification-badge">{{ notificacoes_nao_lidas_count }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="notifications-dropdown" id="generalNotificationsDropdown">
+                        <div class="notifications-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Notificações</span>
+                            {% if notificacoes_nao_lidas_count > 0 %}
+                            <button onclick="marcarTodasLidas()" style="background: none; border: none; color: var(--primary-orange); cursor: pointer; font-size: 0.8rem;">
+                                Marcar todas como lidas
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="notifications-list">
+                            {% if notificacoes_nao_lidas %}
+                                {% for notificacao in notificacoes_nao_lidas %}
+                                <div class="notification-item" id="notificacao-{{ notificacao.id }}">
+                                    <div class="notification-text">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                            {% if notificacao.tipo == 'alocacao_atividade' %}
+                                            <i class="fas fa-tasks" style="color: var(--primary-orange);"></i>
+                                            {% else %}
+                                            <i class="fas fa-info-circle" style="color: var(--green-light);"></i>
+                                            {% endif %}
+                                            <strong>{{ notificacao.titulo }}</strong>
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">{{ notificacao.mensagem }}</div>
+                                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px;">{{ notificacao.criada_em|timesince }} atrás</div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        {% if notificacao.link %}
+                                        <a href="{% url 'marcar_notificacao_lida' notificacao.id %}" class="btn-accept" style="text-decoration: none;">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </a>
+                                        {% endif %}
+                                        <button 
+                                            class="btn-decline"
+                                            onclick="marcarNotificacaoLida({{ notificacao.id }})">
+                                            <i class="fas fa-check"></i> Dispensar
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="notifications-empty">
+                                    <i class="fas fa-bell-slash"></i>
                                     <div>Nenhuma notificação</div>
                                 </div>
                             {% endif %}
@@ -555,34 +596,93 @@
     </script>
     {% endif %}
 
-    {% block content %}{% endblock %}
-
-    <footer>
-        {% block footer %}
-        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
-            <p style="margin: 0;">&copy; 2025 Planit. Gerenciador de Atividades.</p>
-        </div>
-        {% endblock %}
-    </footer>
-
     <script>
-        // Toggle notifications dropdown
+        // Toggle notifications dropdown (convites)
         function toggleNotifications() {
             const dropdown = document.getElementById('notificationsDropdown');
+            const generalDropdown = document.getElementById('generalNotificationsDropdown');
             dropdown.classList.toggle('show');
+            // Fechar o outro dropdown se estiver aberto
+            if (generalDropdown) generalDropdown.classList.remove('show');
         }
 
-        // Close dropdown when clicking outside
+        // Toggle general notifications dropdown
+        function toggleGeneralNotifications() {
+            const dropdown = document.getElementById('generalNotificationsDropdown');
+            const invitationsDropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('show');
+            // Fechar o outro dropdown se estiver aberto
+            if (invitationsDropdown) invitationsDropdown.classList.remove('show');
+        }
+
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
             const bell = document.getElementById('notificationsBell');
             const dropdown = document.getElementById('notificationsDropdown');
+            const generalBell = document.getElementById('generalNotificationsBell');
+            const generalDropdown = document.getElementById('generalNotificationsDropdown');
             
             if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('show');
             }
+            
+            if (generalBell && generalDropdown && !generalBell.contains(event.target) && !generalDropdown.contains(event.target)) {
+                generalDropdown.classList.remove('show');
+            }
         });
-    </script>
-    <script>
+
+        // Marcar notificação como lida
+        function marcarNotificacaoLida(notificacaoId) {
+            fetch(`/ambiente/notificacoes/${notificacaoId}/ler/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remover a notificação da lista
+                    const notifElement = document.getElementById(`notificacao-${notificacaoId}`);
+                    if (notifElement) {
+                        notifElement.remove();
+                    }
+                    // Recarregar a página para atualizar contadores
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Erro ao marcar notificação como lida.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao processar solicitação.');
+            });
+        }
+
+        // Marcar todas as notificações como lidas
+        function marcarTodasLidas() {
+            fetch('/ambiente/notificacoes/marcar-todas-lidas/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Erro ao marcar notificações como lidas.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao processar solicitação.');
+            });
+        }
+
         function postAction(url) {
             fetch(url, {
                 method: 'POST',
@@ -622,6 +722,16 @@
             return cookieValue;
         }
     </script>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        {% block footer %}
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+            <p style="margin: 0;">&copy; 2025 Planit. Gerenciador de Atividades.</p>
+        </div>
+        {% endblock %}
+    </footer>
 
 </body>
 </html>
