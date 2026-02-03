@@ -455,6 +455,145 @@
     .btn-configurar-ambiente i {
         transition: transform 0.2s ease;
     }
+
+    /* Mini Calendar */
+    .mini-calendar-toggle {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        background: rgba(163, 204, 171, 0.1);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        color: var(--text-light);
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mini-calendar-toggle:hover {
+        background: rgba(163, 204, 171, 0.2);
+    }
+
+    .mini-calendar-container {
+        display: none;
+        position: absolute;
+        top: 80px;
+        right: 30px;
+        background: #16160f;
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        z-index: 100;
+        min-width: 280px;
+    }
+
+    .mini-calendar-container.show {
+        display: block;
+    }
+
+    .mini-calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .mini-calendar-header h3 {
+        color: var(--green-light);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .mini-calendar-nav {
+        display: flex;
+        gap: 8px;
+    }
+
+    .mini-calendar-nav button {
+        background: rgba(163, 204, 171, 0.1);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        color: var(--text-light);
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mini-calendar-nav button:hover {
+        background: rgba(163, 204, 171, 0.2);
+    }
+
+    .mini-calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .mini-calendar-weekday {
+        text-align: center;
+        color: rgba(163, 204, 171, 0.6);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 0;
+    }
+
+    .mini-calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+
+    .mini-calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: var(--text-light);
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .mini-calendar-day:hover {
+        background: rgba(163, 204, 171, 0.1);
+    }
+
+    .mini-calendar-day.other-month {
+        color: rgba(163, 204, 171, 0.3);
+    }
+
+    .mini-calendar-day.today {
+        background: var(--primary-orange);
+        color: white;
+        font-weight: 700;
+    }
+
+    .mini-calendar-day.selected {
+        border-color: var(--green-light);
+        background: rgba(163, 204, 171, 0.2);
+    }
+
+    .mini-calendar-day.has-activity::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        width: 4px;
+        height: 4px;
+        background: var(--green-light);
+        border-radius: 50%;
+    }
 </style>
 
 <div class="container-atividades">
@@ -484,6 +623,37 @@
     <div class="calendar-section">
         <div class="calendar-header">
             <span class="month-year" id="monthYear"></span>
+        </div>
+
+        <button class="mini-calendar-toggle" onclick="toggleMiniCalendar()">
+            <i class="fas fa-calendar-alt"></i>
+            Ir para data
+        </button>
+
+        <div class="mini-calendar-container" id="miniCalendar">
+            <div class="mini-calendar-header">
+                <h3 id="miniCalendarMonth"></h3>
+                <div class="mini-calendar-nav">
+                    <button onclick="changeMiniCalendarMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="changeMiniCalendarMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mini-calendar-weekdays">
+                <div class="mini-calendar-weekday">Dom</div>
+                <div class="mini-calendar-weekday">Seg</div>
+                <div class="mini-calendar-weekday">Ter</div>
+                <div class="mini-calendar-weekday">Qua</div>
+                <div class="mini-calendar-weekday">Qui</div>
+                <div class="mini-calendar-weekday">Sex</div>
+                <div class="mini-calendar-weekday">Sáb</div>
+            </div>
+            <div class="mini-calendar-days" id="miniCalendarDays">
+                <!-- Days will be generated by JavaScript -->
+            </div>
         </div>
 
         <div class="calendar-scroll-container">
@@ -531,26 +701,31 @@
 
 <script>
     const atividadesPorDia = {{ atividades_por_dia|safe }};
+    const baseDateFromBackend = "{{ base_date }}"; // Data base do backend
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
                         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     const monthNamesShort = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     let selectedDate = null;
+    let currentBaseDate = baseDateFromBackend ? new Date(baseDateFromBackend + 'T00:00:00') : new Date(); // Data base para o calendário horizontal
+    let miniCalendarDate = new Date(); // Data do mini calendário
 
-    function renderCalendar() {
-        const today = new Date();
+    function renderCalendar(baseDate = null) {
+        if (baseDate) {
+            currentBaseDate = new Date(baseDate);
+        }
         
         // Update header with current month/year
-        const month = today.getMonth();
-        const year = today.getFullYear();
+        const month = currentBaseDate.getMonth();
+        const year = currentBaseDate.getFullYear();
         document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
         
-        // Generate days: 30 days before and 30 days after today
+        // Generate days: 30 days before and 30 days after base date
         let html = '';
         
         for (let i = -30; i <= 30; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
+            const date = new Date(currentBaseDate);
+            date.setDate(currentBaseDate.getDate() + i);
             
             const dayName = dayNames[date.getDay()];
             const dayNum = date.getDate();
@@ -562,7 +737,7 @@
             const day = String(date.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
             
-            const isToday = i === 0;
+            const isToday = dateStr === getTodayDateStr();
             const activityCount = atividadesPorDia[dateStr] || 0;
             const hasActivity = activityCount > 0;
             
@@ -579,11 +754,12 @@
         
         document.getElementById('calendarGrid').innerHTML = html;
         
-        // Scroll to today's card after rendering
+        // Scroll to base date's card after rendering
         setTimeout(() => {
-            const todayCard = document.querySelector('.day-card.today');
-            if (todayCard) {
-                todayCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            const baseDateStr = currentBaseDate.toISOString().split('T')[0];
+            const baseCard = document.querySelector(`.day-card[data-date="${baseDateStr}"]`);
+            if (baseCard) {
+                baseCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }, 100);
     }
@@ -664,20 +840,111 @@
         }
     }
 
+    // Helper function to get today's date string
+    function getTodayDateStr() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Mini Calendar Functions
+    function toggleMiniCalendar() {
+        const miniCal = document.getElementById('miniCalendar');
+        miniCal.classList.toggle('show');
+        if (miniCal.classList.contains('show')) {
+            renderMiniCalendar();
+        }
+    }
+
+    function changeMiniCalendarMonth(delta) {
+        miniCalendarDate.setMonth(miniCalendarDate.getMonth() + delta);
+        renderMiniCalendar();
+    }
+
+    function renderMiniCalendar() {
+        const year = miniCalendarDate.getFullYear();
+        const month = miniCalendarDate.getMonth();
+        
+        // Update header
+        document.getElementById('miniCalendarMonth').textContent = 
+            `${monthNames[month]} ${year}`;
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        // Get previous month's last days
+        const prevMonthLastDay = new Date(year, month, 0).getDate();
+        
+        let html = '';
+        const todayStr = getTodayDateStr();
+        
+        // Previous month's days
+        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+            const day = prevMonthLastDay - i;
+            html += `<div class="mini-calendar-day other-month">${day}</div>`;
+        }
+        
+        // Current month's days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isToday = dateStr === todayStr;
+            const isSelected = dateStr === selectedDate;
+            const hasActivity = atividadesPorDia[dateStr] > 0;
+            
+            html += `
+                <div class="mini-calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasActivity ? 'has-activity' : ''}"
+                     onclick="jumpToDate('${dateStr}')">
+                    ${day}
+                </div>
+            `;
+        }
+        
+        // Next month's days to fill the grid
+        const totalCells = Math.ceil((startingDayOfWeek + daysInMonth) / 7) * 7;
+        const remainingCells = totalCells - (startingDayOfWeek + daysInMonth);
+        for (let day = 1; day <= remainingCells; day++) {
+            html += `<div class="mini-calendar-day other-month">${day}</div>`;
+        }
+        
+        document.getElementById('miniCalendarDays').innerHTML = html;
+    }
+
+    function jumpToDate(dateStr) {
+        // Recarregar a página com o novo base_date
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('base_date', dateStr);
+        window.location.href = currentUrl.toString();
+    }
+
+    // Close mini calendar when clicking outside
+    document.addEventListener('click', function(event) {
+        const miniCal = document.getElementById('miniCalendar');
+        const toggle = document.querySelector('.mini-calendar-toggle');
+        
+        if (miniCal && toggle && 
+            !miniCal.contains(event.target) && 
+            !toggle.contains(event.target) &&
+            miniCal.classList.contains('show')) {
+            miniCal.classList.remove('show');
+        }
+    });
+
     // Initialize calendar on page load
     document.addEventListener('DOMContentLoaded', function() {
         renderCalendar();
+        renderMiniCalendar();
         
-        // Auto-select today
+        // Auto-select base date
         setTimeout(() => {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            const dayNum = today.getDate();
-            const monthShort = monthNamesShort[today.getMonth()];
-            selectDay(dateStr, dayNum, monthShort);
+            const baseDateStr = currentBaseDate.toISOString().split('T')[0];
+            const dayNum = currentBaseDate.getDate();
+            const monthShort = monthNamesShort[currentBaseDate.getMonth()];
+            selectDay(baseDateStr, dayNum, monthShort);
         }, 100);
     });
 </script>

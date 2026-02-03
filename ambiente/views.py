@@ -297,8 +297,17 @@ def editar_permissoes_participante(request, ambiente_id, participante_id):
                     pode_deletar_atividades=pode_deletar
                 )
         else:
-            # Buscar role predefinida
-            role = Role.objects.get(ambiente=ambiente, nome=role_nome)
+            # Buscar ou criar role predefinida
+            role, created = Role.objects.get_or_create(
+                ambiente=ambiente, 
+                nome=role_nome,
+                defaults={
+                    'pode_visualizar_atividades': pode_visualizar,
+                    'pode_criar_atividades': pode_criar,
+                    'pode_editar_atividades': pode_editar,
+                    'pode_deletar_atividades': pode_deletar
+                }
+            )
         
         # Atualizar participante
         participante.role = role

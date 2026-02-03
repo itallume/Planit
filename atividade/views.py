@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.http import JsonResponse, FileResponse, Http404
 from django.db.models import Q
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 import mimetypes
 from .models import Atividade, Cliente, Referencia, Endereco
@@ -71,9 +71,19 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
 
     def get_queryset(self):
         ambiente_id = self.kwargs.get('ambiente_id')
-        hoje = timezone.now().date()
-        trinta_dias_atras = hoje - timedelta(days=30)
-        trinta_dias_frente = hoje + timedelta(days=30)
+        
+        # Obter data base da query string ou usar hoje
+        base_date_str = self.request.GET.get('base_date')
+        if base_date_str:
+            try:
+                base_date = datetime.strptime(base_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                base_date = timezone.now().date()
+        else:
+            base_date = timezone.now().date()
+        
+        trinta_dias_atras = base_date - timedelta(days=30)
+        trinta_dias_frente = base_date + timedelta(days=30)
         
         return Atividade.objects.filter(
             ambiente__id=ambiente_id,
@@ -92,11 +102,20 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         permissoes = self.get_user_permissions(ambiente)
         context['user_permissions'] = permissoes
         
-        # Gerar dados para agenda
-        hoje = timezone.now().date()
+        # Obter data base da query string ou usar hoje
+        base_date_str = self.request.GET.get('base_date')
+        if base_date_str:
+            try:
+                base_date = datetime.strptime(base_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                base_date = timezone.now().date()
+        else:
+            base_date = timezone.now().date()
+        
+        # Gerar dados para agenda usando a data base
         atividades_por_dia = {}
         for i in range(-30, 31):
-            data = hoje + timedelta(days=i)
+            data = base_date + timedelta(days=i)
             count = Atividade.objects.filter(
                 ambiente__id=ambiente_id,
                 data_prevista=data
@@ -104,6 +123,7 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
             atividades_por_dia[data.isoformat()] = count
         
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
+        context['base_date'] = base_date.isoformat()
         return context
 
 class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DetailView):

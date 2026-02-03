@@ -587,18 +587,39 @@
             fetch(url, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': getCSRFToken()
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
                 }
             })
             .then(response => response.json())
             .then(data => {
-                // aqui você controla a UX
-                window.location.reload()
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Erro ao processar solicitação.');
+                }
             })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao processar solicitação.');
+            });
         }
 
         function getCSRFToken() {
-            return document.querySelector('[name=csrfmiddlewaretoken]').value
+            // Tenta pegar do cookie primeiro
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     </script>
 
