@@ -1,5 +1,5 @@
 from django.test import SimpleTestCase
-from django.core.validators import MinValueValidator, FileExtensionValidator, EmailValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
 from unittest.mock import Mock
 from atividade.models import STATUS_CHOICES, Atividade, Referencia, Cliente, Endereco
@@ -88,6 +88,11 @@ class AtividadeModelUnitTest(SimpleTestCase):
         field = Atividade._meta.get_field('valor_recebido')
         self.assertEqual(field.default, 0.00)
     
+    def test_atividade_valor_recebido_has_validator(self):
+        """Testa se valor_recebido tem MinValueValidator"""
+        field = Atividade._meta.get_field('valor_recebido')
+        self.assertTrue(any(isinstance(v, MinValueValidator) for v in field.validators))
+    
     def test_atividade_data_prevista_field_type(self):
         """Testa se data_prevista é DateField"""
         field = Atividade._meta.get_field('data_prevista')
@@ -117,6 +122,11 @@ class AtividadeModelUnitTest(SimpleTestCase):
         """Testa se status é CharField"""
         field = Atividade._meta.get_field('status')
         self.assertIsInstance(field, models.CharField)
+    
+    def test_atividade_status_max_length(self):
+        """Testa se status tem max_length=50"""
+        field = Atividade._meta.get_field('status')
+        self.assertEqual(field.max_length, 50)
     
     def test_atividade_status_choices(self):
         """Testa se status tem as choices corretas"""
@@ -166,6 +176,41 @@ class AtividadeModelUnitTest(SimpleTestCase):
     def test_atividade_cliente_blank_true(self):
         """Testa se cliente permite blank"""
         field = Atividade._meta.get_field('cliente')
+        self.assertTrue(field.blank)
+    
+    def test_atividade_cliente_on_delete_set_null(self):
+        """Testa se cliente tem on_delete=SET_NULL"""
+        field = Atividade._meta.get_field('cliente')
+        self.assertEqual(field.remote_field.on_delete.__name__, 'SET_NULL')
+    
+    def test_atividade_has_responsaveis_field(self):
+        """Testa se Atividade tem campo responsaveis (ManyToMany)"""
+        field = Atividade._meta.get_field('responsaveis')
+        self.assertIsInstance(field, models.ManyToManyField)
+    
+    def test_atividade_responsaveis_related_name(self):
+        """Testa se responsaveis tem related_name correto"""
+        field = Atividade._meta.get_field('responsaveis')
+        self.assertEqual(field.remote_field.related_name, 'atividades_responsaveis')
+    
+    def test_atividade_responsaveis_blank_true(self):
+        """Testa se responsaveis permite blank"""
+        field = Atividade._meta.get_field('responsaveis')
+        self.assertTrue(field.blank)
+    
+    def test_atividade_has_participantes_alocados_field(self):
+        """Testa se Atividade tem campo participantes_alocados (ManyToMany)"""
+        field = Atividade._meta.get_field('participantes_alocados')
+        self.assertIsInstance(field, models.ManyToManyField)
+    
+    def test_atividade_participantes_alocados_related_name(self):
+        """Testa se participantes_alocados tem related_name correto"""
+        field = Atividade._meta.get_field('participantes_alocados')
+        self.assertEqual(field.remote_field.related_name, 'atividades_alocadas')
+    
+    def test_atividade_participantes_alocados_blank_true(self):
+        """Testa se participantes_alocados permite blank"""
+        field = Atividade._meta.get_field('participantes_alocados')
         self.assertTrue(field.blank)
     
     def test_atividade_str_method(self):
@@ -292,10 +337,10 @@ class EnderecoModelUnitTest(SimpleTestCase):
         field = Endereco._meta.get_field('rua')
         self.assertEqual(field.max_length, 200)
     
-    def test_endereco_numero_field_type(self):
-        """Testa se numero é CharField"""
+    def test_endereco_numero_max_length(self):
+        """Testa se numero tem max_length=20"""
         field = Endereco._meta.get_field('numero')
-        self.assertIsInstance(field, models.CharField)
+        self.assertEqual(field.max_length, 20)
     
     def test_endereco_numero_blank_true(self):
         """Testa se numero permite blank"""
@@ -312,30 +357,90 @@ class EnderecoModelUnitTest(SimpleTestCase):
         field = Endereco._meta.get_field('cidade')
         self.assertIsInstance(field, models.CharField)
     
+    def test_endereco_cidade_max_length(self):
+        """Testa se cidade tem max_length=100"""
+        field = Endereco._meta.get_field('cidade')
+        self.assertEqual(field.max_length, 100)
+    
     def test_endereco_estado_field_type(self):
         """Testa se estado é CharField"""
         field = Endereco._meta.get_field('estado')
         self.assertIsInstance(field, models.CharField)
+    
+    def test_endereco_estado_max_length(self):
+        """Testa se estado tem max_length=100"""
+        field = Endereco._meta.get_field('estado')
+        self.assertEqual(field.max_length, 100)
     
     def test_endereco_cep_field_type(self):
         """Testa se cep é CharField"""
         field = Endereco._meta.get_field('cep')
         self.assertIsInstance(field, models.CharField)
     
+    def test_endereco_cep_max_length(self):
+        """Testa se cep tem max_length=20"""
+        field = Endereco._meta.get_field('cep')
+        self.assertEqual(field.max_length, 20)
+    
     def test_endereco_complemento_field_type(self):
         """Testa se complemento é CharField"""
         field = Endereco._meta.get_field('complemento')
         self.assertIsInstance(field, models.CharField)
+    
+    def test_endereco_complemento_max_length(self):
+        """Testa se complemento tem max_length=200"""
+        field = Endereco._meta.get_field('complemento')
+        self.assertEqual(field.max_length, 200)
     
     def test_endereco_complemento_blank_true(self):
         """Testa se complemento permite blank"""
         field = Endereco._meta.get_field('complemento')
         self.assertTrue(field.blank)
     
+    def test_endereco_complemento_null_true(self):
+        """Testa se complemento permite null"""
+        field = Endereco._meta.get_field('complemento')
+        self.assertTrue(field.null)
+    
     def test_endereco_cliente_field_type(self):
         """Testa se cliente é ForeignKey"""
         field = Endereco._meta.get_field('cliente')
         self.assertIsInstance(field, models.ForeignKey)
+    
+    def test_endereco_cliente_null_true(self):
+        """Testa se cliente permite null"""
+        field = Endereco._meta.get_field('cliente')
+        self.assertTrue(field.null)
+    
+    def test_endereco_cliente_related_name(self):
+        """Testa se cliente tem related_name='enderecos'"""
+        field = Endereco._meta.get_field('cliente')
+        self.assertEqual(field.remote_field.related_name, 'enderecos')
+    
+    def test_endereco_cliente_on_delete_cascade(self):
+        """Testa se cliente tem on_delete=CASCADE"""
+        field = Endereco._meta.get_field('cliente')
+        self.assertEqual(field.remote_field.on_delete.__name__, 'CASCADE')
+    
+    def test_endereco_has_atividade_field(self):
+        """Testa se Endereco tem campo atividade"""
+        field = Endereco._meta.get_field('atividade')
+        self.assertIsInstance(field, models.ForeignKey)
+    
+    def test_endereco_atividade_null_true(self):
+        """Testa se atividade permite null"""
+        field = Endereco._meta.get_field('atividade')
+        self.assertTrue(field.null)
+    
+    def test_endereco_atividade_related_name(self):
+        """Testa se atividade tem related_name='enderecos'"""
+        field = Endereco._meta.get_field('atividade')
+        self.assertEqual(field.remote_field.related_name, 'enderecos')
+    
+    def test_endereco_atividade_on_delete_cascade(self):
+        """Testa se atividade tem on_delete=CASCADE"""
+        field = Endereco._meta.get_field('atividade')
+        self.assertEqual(field.remote_field.on_delete.__name__, 'CASCADE')
     
     def test_endereco_str_method(self):
         """Testa método __str__ do Endereco"""
