@@ -69,6 +69,7 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
+    paginate_by = 2  # 2 atividades por página
 
     def get_queryset(self):
         ambiente_id = self.kwargs.get('ambiente_id')
@@ -83,14 +84,29 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         else:
             base_date = timezone.now().date()
         
+        # Obter data selecionada para filtro (do calendário)
+        selected_date_str = self.request.GET.get('data')
+        
+        if selected_date_str:
+            try:
+                selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+                # Filtrar atividades apenas do dia selecionado
+                return Atividade.objects.filter(
+                    ambiente__id=ambiente_id,
+                    data_prevista=selected_date
+                ).order_by('hora_prevista', 'id')
+            except ValueError:
+                pass
+        
+        # Se não houver data selecionada, mostrar atividades do período
         trinta_dias_atras = base_date - timedelta(days=30)
-        trinta_dias_frente = base_date + timedelta(days=30)
+        trinta_dias_frente = base_date + timedelta(days=60)
         
         return Atividade.objects.filter(
             ambiente__id=ambiente_id,
             data_prevista__gte=trinta_dias_atras,
             data_prevista__lte=trinta_dias_frente
-        ).order_by('data_prevista')
+        ).order_by('data_prevista', 'hora_prevista', 'id')
     
     #TODO refazer isso aq
     def get_context_data(self, **kwargs):
@@ -113,6 +129,11 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         else:
             base_date = timezone.now().date()
         
+        # Obter data selecionada
+        selected_date_str = self.request.GET.get('data')
+        if selected_date_str:
+            context['selected_date'] = selected_date_str
+        
         # Gerar dados para agenda usando a data base
         atividades_por_dia = {}
         for i in range(-30, 31):
@@ -125,6 +146,14 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         context['base_date'] = base_date.isoformat()
+        
+        # Adicionar informações de paginação customizadas
+        page_obj = context.get('page_obj')
+        if page_obj:
+            context['total_atividades'] = page_obj.paginator.count
+            context['mostrando_inicio'] = (page_obj.number - 1) * self.paginate_by + 1
+            context['mostrando_fim'] = min(page_obj.number * self.paginate_by, page_obj.paginator.count)
+        
         return context
 
 class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DetailView):

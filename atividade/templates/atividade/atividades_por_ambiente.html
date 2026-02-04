@@ -594,6 +594,96 @@
         background: var(--green-light);
         border-radius: 50%;
     }
+
+    /* Paginação */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding: 20px 0;
+        border-top: 1px solid rgba(163, 204, 171, 0.15);
+    }
+
+    .pagination-info {
+        color: rgba(163, 204, 171, 0.8);
+        font-size: 0.9rem;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .pagination-btn {
+        background: rgba(163, 204, 171, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.3);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(163, 204, 171, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+        background: var(--ambiente-theme-color, var(--primary-orange));
+        color: white;
+        border-color: var(--ambiente-theme-color, var(--primary-orange));
+    }
+
+    .pagination-pages {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pagination-page {
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(163, 204, 171, 0.05);
+        color: var(--text-light);
+        border: 1px solid rgba(163, 204, 171, 0.2);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .pagination-page:hover {
+        background: rgba(163, 204, 171, 0.15);
+    }
+
+    .pagination-page.active {
+        background: var(--ambiente-theme-color, var(--primary-orange));
+        color: white;
+        border-color: var(--ambiente-theme-color, var(--primary-orange));
+    }
+
+    .pagination-ellipsis {
+        padding: 0 8px;
+        color: rgba(163, 204, 171, 0.5);
+    }
 </style>
 
 <div class="container-atividades">
@@ -698,6 +788,63 @@
                 </div>
             {% endif %}
         </div>
+
+        <!-- Paginação -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Mostrando {{ mostrando_inicio }} - {{ mostrando_fim }} de {{ total_atividades }} atividades
+            </div>
+            
+            <div class="pagination-controls">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-btn">
+                        <i class="fas fa-angle-double-left"></i> Primeira
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-btn">
+                        <i class="fas fa-angle-left"></i> Anterior
+                    </a>
+                {% else %}
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-angle-double-left"></i> Primeira
+                    </button>
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-angle-left"></i> Anterior
+                    </button>
+                {% endif %}
+
+                <div class="pagination-pages">
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <span class="pagination-page active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-page">{{ num }}</a>
+                        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                            <a href="?page={{ num }}{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-page">{{ num }}</a>
+                        {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                            <span class="pagination-ellipsis">...</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-btn">
+                        Próxima <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_date %}&data={{ selected_date }}{% endif %}{% if request.GET.base_date %}&base_date={{ request.GET.base_date }}{% endif %}" class="pagination-btn">
+                        Última <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% else %}
+                    <button class="pagination-btn" disabled>
+                        Próxima <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button class="pagination-btn" disabled>
+                        Última <i class="fas fa-angle-double-right"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -770,40 +917,10 @@
     function selectDay(dateStr, day, month) {
         selectedDate = dateStr;
         
-        // Update month/year header based on selected date
-        const clickedDate = new Date(dateStr);
-        const monthIndex = clickedDate.getMonth();
-        const year = clickedDate.getFullYear();
-        document.getElementById('monthYear').textContent = `${monthNames[monthIndex]} ${year}`;
-        
-        // Remove previous selection from all cards
-        document.querySelectorAll('.day-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Add selected class to clicked day (always, even if it's today)
-        const clickedCard = document.querySelector(`.day-card[data-date="${dateStr}"]`);
-        if (clickedCard) {
-            clickedCard.classList.add('selected');
-        }
-        
-        // Scroll the clicked card to center
-        if (clickedCard) {
-            clickedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-        
-        // Update activities header
-        document.getElementById('activitiesHeader').textContent = `Atividades para ${day} de ${month}`;
-        
-        // Update "Nova Atividade" button to include data_prevista
-        const btnNovaAtividade = document.getElementById('btnNovaAtividade');
-        if (btnNovaAtividade) {
-            const baseUrl = `{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}`;
-            btnNovaAtividade.href = `${baseUrl}&data_prevista=${dateStr}`;
-        }
-        
-        // Filter activities by selected date
-        filterActivities(dateStr);
+        // Redirecionar para a página com o filtro de data (sempre página 1)
+        const baseUrl = window.location.pathname;
+        const baseDate = new URLSearchParams(window.location.search).get('base_date') || baseDateFromBackend;
+        window.location.href = `${baseUrl}?data=${dateStr}&base_date=${baseDate}&page=1`;
     }
 
     function filterActivities(dateStr) {
@@ -941,13 +1058,35 @@
         renderCalendar();
         renderMiniCalendar();
         
-        // Auto-select base date
-        setTimeout(() => {
-            const baseDateStr = currentBaseDate.toISOString().split('T')[0];
-            const dayNum = currentBaseDate.getDate();
-            const monthShort = monthNamesShort[currentBaseDate.getMonth()];
-            selectDay(baseDateStr, dayNum, monthShort);
-        }, 100);
+        // Verificar se há uma data selecionada na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedDateFromUrl = urlParams.get('data');
+        
+        if (selectedDateFromUrl) {
+            // Marcar o dia selecionado
+            selectedDate = selectedDateFromUrl;
+            const clickedCard = document.querySelector(`.day-card[data-date="${selectedDateFromUrl}"]`);
+            if (clickedCard) {
+                clickedCard.classList.add('selected');
+                // Scroll para o card selecionado
+                setTimeout(() => {
+                    clickedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }, 100);
+            }
+            
+            // Atualizar header de atividades
+            const date = new Date(selectedDateFromUrl);
+            const dayNum = date.getDate();
+            const monthShort = monthNamesShort[date.getMonth()];
+            document.getElementById('activitiesHeader').textContent = `Atividades para ${dayNum} de ${monthShort}`;
+            
+            // Atualizar botão de nova atividade
+            const btnNovaAtividade = document.getElementById('btnNovaAtividade');
+            if (btnNovaAtividade) {
+                const baseUrl = `{% url 'criar_atividade' %}?ambiente_id={{ ambiente.id }}`;
+                btnNovaAtividade.href = `${baseUrl}&data_prevista=${selectedDateFromUrl}`;
+            }
+        }
     });
 </script>
 
