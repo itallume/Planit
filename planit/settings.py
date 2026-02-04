@@ -79,16 +79,27 @@ WSGI_APPLICATION = 'planit.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME', 'planit_db'),
-        'USER': os.environ.get('DATABASE_USERNAME', 'planit_user'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'planit_password'),
-        'HOST': os.environ.get('DATABASE_HOST', 'db'),
-        'PORT': os.environ.get('DATABASE_PORT', '5432'),
+import sys
+
+# Use SQLite for tests
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DATABASE_NAME', 'planit_db'),
+            'USER': os.environ.get('DATABASE_USERNAME', 'planit_user'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'planit_password'),
+            'HOST': os.environ.get('DATABASE_HOST', 'db'),
+            'PORT': os.environ.get('DATABASE_PORT', '5432'),
+        }
+    }
 
 
 # Password validation
