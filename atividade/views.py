@@ -17,6 +17,7 @@ from .mixins import AmbientePermissionMixin, AtividadePermissionMixin
 from rest_framework import viewsets, permissions
 from .serializers import ClienteSerializer, EnderecoSerializer
 from django.contrib import messages
+from ambiente.models import Participante, Role
 
 class ClienteViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cliente.objects.all()
@@ -78,7 +79,6 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
                 data_prevista=base_date
             ).order_by('hora_prevista', 'id')
         
-        # Fallback: mostrar range de datas (não deveria chegar aqui normalmente)
         trinta_dias_atras = base_date - timedelta(days=30)
         trinta_dias_frente = base_date + timedelta(days=60)
         
@@ -217,11 +217,8 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             context['endereco_formset'] = EnderecoFormSet(prefix='endereco')
             context['referencia_formset'] = ReferenciaFormSet(prefix='referencia')
         
-        # Adicionar lista de participantes do ambiente
         if ambiente_id:
-            from ambiente.models import Participante, Role
             
-            # Garantir que todos os usuários participantes tenham um objeto Participante
             ambiente_obj = Ambiente.objects.get(id=ambiente_id)
             for user in ambiente_obj.usuarios_participantes.all():
                 role_leitor = Role.objects.filter(ambiente=ambiente_obj, nome=Role.LEITOR).first()
@@ -258,13 +255,11 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         if not referencia_formset.is_valid():
             return self.form_invalid(form)
         
-        # Processar cliente - verificar se há dados de cliente no formulário
         cliente_id = self.request.POST.get('cliente')
         cliente_nome = cliente_form.cleaned_data.get('nome') if cliente_form.is_valid() else None
         cliente = None
         
         if cliente_id and cliente_nome:
-            # Cliente existente sendo editado
             try:
                 cliente = Cliente.objects.get(id=cliente_id)
                 if cliente_form.is_valid():
@@ -300,7 +295,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             self.object.cliente = cliente
         self.object.save()
         
-        # Processar participantes alocados
         participantes_ids = self.request.POST.getlist('participantes')
         novos_participantes = []
         if participantes_ids:
@@ -314,7 +308,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         else:
             self.object.participantes_alocados.clear()
         
-        # Criar notificações para os participantes alocados
         if novos_participantes:
             from ambiente.models import Notificacao
             from django.urls import reverse
@@ -340,8 +333,6 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
     def form_invalid(self, form):
         """Retornar ao template com todos os erros preservados"""
         context = self.get_context_data(form=form)
-        # Os formsets já estão sendo recriados no get_context_data com os dados do POST,
-        # então os erros já estarão presentes
         return self.render_to_response(context)
 
 class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, UpdateView):
@@ -394,10 +385,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         context['atividade'] = atividade
         context['ambiente'] = atividade.ambiente
         
-        # Adicionar lista de participantes do ambiente
-        from ambiente.models import Participante, Role
-        
-        # Garantir que todos os usuários participantes tenham um objeto Participante
         for user in atividade.ambiente.usuarios_participantes.all():
             role_leitor = Role.objects.filter(ambiente=atividade.ambiente, nome=Role.LEITOR).first()
             Participante.objects.get_or_create(
@@ -410,7 +397,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             ambiente=atividade.ambiente
         ).select_related('usuario', 'role')
         
-        # Adicionar participantes já alocados
         context['participantes_alocados'] = list(atividade.participantes_alocados.values_list('id', flat=True))
         
         return context
@@ -464,7 +450,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             self.object.cliente = cliente
             self.object.save()
         
-        # Processar participantes alocados
         participantes_ids = self.request.POST.getlist('participantes')
         participantes_antigos = set(self.object.participantes_alocados.all())
         novos_participantes = []
@@ -477,13 +462,11 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             )
             self.object.participantes_alocados.set(participantes)
             
-            # Identificar apenas os participantes que foram adicionados agora
             participantes_atuais = set(participantes)
             novos_participantes = list(participantes_atuais - participantes_antigos)
         else:
             self.object.participantes_alocados.clear()
         
-        # Criar notificações apenas para os novos participantes
         if novos_participantes:
             from ambiente.models import Notificacao
             from django.urls import reverse
@@ -509,8 +492,6 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
     def form_invalid(self, form):
         """Retornar ao template com todos os erros preservados"""
         context = self.get_context_data(form=form)
-        # Os formsets já estão sendo recriados no get_context_data com os dados do POST,
-        # então os erros já estarão presentes
         return self.render_to_response(context)
 
 class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DeleteView):
@@ -557,13 +538,11 @@ def download_referencia(request, referencia_id: int):
     desired_name = (referencia.nome_arquivo or '').strip()
 
     if desired_name:
-        # If a custom name is provided, ensure it has the original extension
         if not os.path.splitext(desired_name)[1] and ext:
             filename = desired_name + ext
         else:
             filename = desired_name
     else:
-        # Fallback to stored filename with extension
         filename = original_name
 
     content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
