@@ -26,6 +26,15 @@ class AtividadeForm(forms.ModelForm):
         # Garantir que os formatos de data e hora sejam compatíveis com HTML5 inputs
         self.fields['data_prevista'].input_formats = ['%Y-%m-%d']
         self.fields['hora_prevista'].input_formats = ['%H:%M', '%H:%M:%S']
+        
+        # Tornar descrição obrigatória
+        self.fields['descricao'].required = True
+        
+        # Remover atributo 'required' de todos os campos (validação apenas no backend)
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop('required', None)
+            if hasattr(field.widget, 'use_required_attribute'):
+                field.widget.use_required_attribute = lambda x: False
     
     def clean_valor(self):
         valor = self.cleaned_data.get('valor')
@@ -58,11 +67,16 @@ class ClienteForm(forms.ModelForm):
         widgets = {
             'sobre': forms.Textarea(attrs={'rows': 3}),
         }
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Tornar todos os campos opcionais quando usado em conjunto com atividade
         for field_name in self.fields:
             self.fields[field_name].required = False
+            # Remover atributo 'required' do HTML (validação apenas no backend)
+            self.fields[field_name].widget.attrs.pop('required', None)
+            if hasattr(self.fields[field_name].widget, 'use_required_attribute'):
+                self.fields[field_name].widget.use_required_attribute = lambda x: False
     
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -85,12 +99,28 @@ class EnderecoForm(forms.ModelForm):
     class Meta:
         model = Endereco
         fields = ['rua', 'numero', 'cidade', 'estado', 'cep', 'complemento']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remover atributo 'required' de todos os campos (validação apenas no backend)
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs.pop('required', None)
+            if hasattr(self.fields[field_name].widget, 'use_required_attribute'):
+                self.fields[field_name].widget.use_required_attribute = lambda x: False
 
 
 class ReferenciaForm(forms.ModelForm):
     class Meta:
         model = Referencia
         fields = ['nome_arquivo', 'arquivo']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remover atributo 'required' de todos os campos (validação apenas no backend)
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs.pop('required', None)
+            if hasattr(self.fields[field_name].widget, 'use_required_attribute'):
+                self.fields[field_name].widget.use_required_attribute = lambda x: False
     
     def clean_arquivo(self):
         arquivo = self.cleaned_data.get('arquivo')

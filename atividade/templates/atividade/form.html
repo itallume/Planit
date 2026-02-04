@@ -843,7 +843,7 @@
         <button type="button" class="tab-btn" data-tab="tab-participantes"><i class="fas fa-users"></i> Participantes</button>
     </div>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
         {{ atividade_form.cliente }}
 
@@ -1279,6 +1279,12 @@
         if (targetBtn && targetContent) {
             targetBtn.classList.add('active');
             targetContent.classList.add('active');
+            
+            // Scroll suave para o topo do formulário ao trocar de aba
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         }
     }
 
@@ -1296,9 +1302,10 @@
         // Verificar aba de Atividade
         const atividadeTab = document.getElementById('tab-atividade');
         if (atividadeTab) {
-            const hasAtividadeErrors = atividadeTab.querySelector('.errorlist, [style*="status-delayed"]') || 
-                                      document.querySelector('.form-header + [style*="status-delayed"]');
-            if (hasAtividadeErrors) {
+            const errorElements = atividadeTab.querySelectorAll('[style*="status-delayed"]');
+            const nonFieldErrors = document.querySelector('.form-header + [style*="status-delayed"]');
+            
+            if (errorElements.length > 0 || nonFieldErrors) {
                 errorTabs.push('tab-atividade');
             }
         }
@@ -1306,8 +1313,9 @@
         // Verificar aba de Cliente
         const clienteTab = document.getElementById('tab-cliente');
         if (clienteTab) {
-            const hasClienteErrors = clienteTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasClienteErrors) {
+            const errorElements = clienteTab.querySelectorAll('[style*="status-delayed"]');
+            
+            if (errorElements.length > 0) {
                 errorTabs.push('tab-cliente');
             }
         }
@@ -1315,8 +1323,9 @@
         // Verificar aba de Endereços
         const enderecoTab = document.getElementById('tab-endereco');
         if (enderecoTab) {
-            const hasEnderecoErrors = enderecoTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasEnderecoErrors) {
+            const errorElements = enderecoTab.querySelectorAll('[style*="status-delayed"]');
+            
+            if (errorElements.length > 0) {
                 errorTabs.push('tab-endereco');
             }
         }
@@ -1324,36 +1333,46 @@
         // Verificar aba de Referências
         const referenciaTab = document.getElementById('tab-referencias');
         if (referenciaTab) {
-            const hasReferenciaErrors = referenciaTab.querySelector('.errorlist, [style*="status-delayed"]');
-            if (hasReferenciaErrors) {
+            const errorElements = referenciaTab.querySelectorAll('[style*="status-delayed"]');
+            
+            if (errorElements.length > 0) {
                 errorTabs.push('tab-referencias');
             }
         }
+
+        // Remover badges existentes primeiro (limpar estado anterior)
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('has-error');
+            const existingBadge = btn.querySelector('.tab-error-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+        });
 
         // Adicionar badges e classes de erro nas abas
         errorTabs.forEach(tabId => {
             const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
             if (tabBtn) {
                 tabBtn.classList.add('has-error');
-                // Adicionar badge se ainda não existir
-                if (!tabBtn.querySelector('.tab-error-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'tab-error-badge';
-                    tabBtn.appendChild(badge);
-                }
+                const badge = document.createElement('span');
+                badge.className = 'tab-error-badge';
+                tabBtn.appendChild(badge);
             }
         });
 
-        // Mudar para a primeira aba com erro
+        // Mudar para a primeira aba com erro e scroll para o topo
         if (errorTabs.length > 0) {
             switchToTab(errorTabs[0]);
         }
     }
 
-    // Executar detecção de erros ao carregar a página
-    document.addEventListener('DOMContentLoaded', detectAndMarkErrors);
-    // Também executar imediatamente caso o DOM já esteja carregado
-    detectAndMarkErrors();
+    // Executar detecção de erros quando o DOM estiver pronto
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', detectAndMarkErrors);
+    } else {
+        // DOM já está pronto, executar imediatamente
+        detectAndMarkErrors();
+    }
 
     // Sistema de Busca de Cliente
     const searchInput = document.getElementById('cliente-search');

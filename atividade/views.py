@@ -339,7 +339,10 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         return redirect(self.get_success_url())
     
     def form_invalid(self, form):
+        """Retornar ao template com todos os erros preservados"""
         context = self.get_context_data(form=form)
+        # Os formsets já estão sendo recriados no get_context_data com os dados do POST,
+        # então os erros já estarão presentes
         return self.render_to_response(context)
 
 class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, UpdateView):
@@ -505,13 +508,10 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
         return redirect(self.get_success_url())
     
     def form_invalid(self, form):
-        """Sobrescrever para adicionar contexto de erro"""
-        print("=== FORM INVALID ===")
-        print(f"Atividade form errors: {form.errors}")
+        """Retornar ao template com todos os erros preservados"""
         context = self.get_context_data(form=form)
-        print(f"Cliente form errors: {context['cliente_form'].errors}")
-        print(f"Endereco formset errors: {context['endereco_formset'].errors}")
-        print(f"Referencia formset errors: {context['referencia_formset'].errors}")
+        # Os formsets já estão sendo recriados no get_context_data com os dados do POST,
+        # então os erros já estarão presentes
         return self.render_to_response(context)
 
 class AtividadeDeleteView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, DeleteView):
