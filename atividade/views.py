@@ -451,6 +451,8 @@ class AtividadeUpdateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             self.object.save()
         
         participantes_ids = self.request.POST.getlist('participantes')
+        # Filter out empty strings
+        participantes_ids = [pid for pid in participantes_ids if pid]
         participantes_antigos = set(self.object.participantes_alocados.all())
         novos_participantes = []
         
