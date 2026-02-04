@@ -202,7 +202,6 @@ class AmbienteInvitationViewSet(viewsets.ModelViewSet):
         invitation.accepted = True
         invitation.save()
         
-        # Criar Participante com role Leitor por padrão
         role_leitor = Role.objects.filter(ambiente=ambiente, nome=Role.LEITOR).first()
         Participante.objects.get_or_create(
             usuario=request.user,
@@ -247,7 +246,6 @@ def editar_permissoes_participante(request, ambiente_id, participante_id):
             'message': 'Método não permitido.'
         }, status=405)
     
-    # Verificar se o usuário tem permissão para editar (deve ser administrador do ambiente)
     ambiente = get_object_or_404(Ambiente, id=ambiente_id)
     if ambiente.usuario_administrador != request.user:
         return JsonResponse({
@@ -255,39 +253,29 @@ def editar_permissoes_participante(request, ambiente_id, participante_id):
             'message': 'Você não tem permissão para editar permissões neste ambiente.'
         }, status=403)
     
-    # Buscar o participante
     participante = get_object_or_404(Participante, id=participante_id, ambiente=ambiente)
     
     try:
         data = json.loads(request.body)
         
-        # Extrair permissões do request
         pode_visualizar = data.get('pode_visualizar_atividades', True)
         pode_criar = data.get('pode_criar_atividades', False)
         pode_editar = data.get('pode_editar_atividades', False)
         pode_deletar = data.get('pode_deletar_atividades', False)
         
-        # Verificar se é uma role predefinida ou criar custom
         role_nome = None
         
-        # Leitor: apenas visualizar
         if pode_visualizar and not pode_criar and not pode_editar and not pode_deletar:
             role_nome = Role.LEITOR
-        # Editor: visualizar, criar e editar
         elif pode_visualizar and pode_criar and pode_editar and not pode_deletar:
             role_nome = Role.EDITOR
-        # Administrador: todas as permissões
         elif pode_visualizar and pode_criar and pode_editar and pode_deletar:
             role_nome = Role.ADMINISTRADOR
-        # Custom: qualquer outra combinação
         else:
             role_nome = Role.CUSTOM
         
-        # Buscar ou criar a role
         if role_nome == Role.CUSTOM:
-            # Para custom, criar uma nova role ou atualizar a existente se for custom
             if participante.role and participante.role.nome == Role.CUSTOM:
-                # Atualizar role custom existente
                 role = participante.role
                 role.pode_visualizar_atividades = pode_visualizar
                 role.pode_criar_atividades = pode_criar
@@ -317,7 +305,6 @@ def editar_permissoes_participante(request, ambiente_id, participante_id):
                 }
             )
         
-        # Atualizar participante
         participante.role = role
         participante.save()
         
@@ -348,7 +335,6 @@ def obter_permissoes_participante(request, ambiente_id, participante_id):
     participante = get_object_or_404(Participante, id=participante_id, ambiente=ambiente)
     
     if not participante.role:
-        # Se não tem role, retornar permissões padrão (Leitor)
         return JsonResponse({
             'success': True,
             'pode_visualizar_atividades': True,
@@ -393,14 +379,12 @@ def marcar_notificacao_lida(request, notificacao_id):
     notificacao.lida = True
     notificacao.save()
     
-    # Se for POST (via AJAX), retorna JSON
     if request.method == 'POST':
         return JsonResponse({
             'success': True,
             'message': 'Notificação marcada como lida.'
         })
     
-    # Se for GET, redirecionar para o link da notificação
     if notificacao.link:
         return redirect(notificacao.link)
     else:
@@ -424,7 +408,6 @@ def marcar_todas_lidas(request):
 
 @login_required
 def contagem_notificacoes(request):
-    """Retorna a contagem de notificações não lidas (para uso em AJAX)."""
     from ambiente.models import Notificacao
     
     count = Notificacao.objects.filter(usuario=request.user, lida=False).count()

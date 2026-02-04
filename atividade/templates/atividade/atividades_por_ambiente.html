@@ -855,13 +855,28 @@
                         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     const monthNamesShort = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    // Função para fazer parse de data sem conversão de timezone
+    function parseDateLocal(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+    
+    // Função para formatar Date como YYYY-MM-DD sem conversão UTC
+    function formatDateLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
     let selectedDate = null;
-    let currentBaseDate = baseDateFromBackend ? new Date(baseDateFromBackend + 'T00:00:00') : new Date(); // Data base para o calendário horizontal
+    let currentBaseDate = baseDateFromBackend ? parseDateLocal(baseDateFromBackend) : new Date(); // Data base para o calendário horizontal
     let miniCalendarDate = new Date(); // Data do mini calendário
 
     function renderCalendar(baseDate = null) {
         if (baseDate) {
-            currentBaseDate = new Date(baseDate);
+            currentBaseDate = parseDateLocal(baseDate);
         }
         
         // Update header with current month/year
@@ -905,7 +920,7 @@
         
         // Scroll to base date's card after rendering
         setTimeout(() => {
-            const baseDateStr = currentBaseDate.toISOString().split('T')[0];
+            const baseDateStr = formatDateLocal(currentBaseDate);
             const baseCard = document.querySelector(`.day-card[data-date="${baseDateStr}"]`);
             if (baseCard) {
                 baseCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -1074,10 +1089,10 @@
                 }, 100);
             }
             
-            // Atualizar header de atividades
-            const date = new Date(selectedDateFromUrl);
-            const dayNum = date.getDate();
-            const monthShort = monthNamesShort[date.getMonth()];
+            // Atualizar header de atividades (usando parse local para evitar problema de timezone)
+            const dateParts = selectedDateFromUrl.split('-');
+            const dayNum = parseInt(dateParts[2], 10);
+            const monthShort = monthNamesShort[parseInt(dateParts[1], 10) - 1];
             document.getElementById('activitiesHeader').textContent = `Atividades para ${dayNum} de ${monthShort}`;
             
             // Atualizar botão de nova atividade

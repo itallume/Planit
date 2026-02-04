@@ -43,38 +43,15 @@ class EnderecoViewSet(viewsets.ReadOnlyModelViewSet):
             'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
         )
 
-# @login_required
-# def buscar_clientes(request):
-#     """API para buscar clientes por nome ou email"""
-#     query = request.GET.get('q', '').strip()
-#     clientes = Cliente.objects.all().order_by('nome')
-    
-#     if query:
-#         clientes = clientes.filter(Q(nome__icontains=query) | Q(email__icontains=query))
-#     limit = 10 if query else 20
-#     clientes = clientes.values('id', 'nome', 'email', 'telefone', 'sobre')[:limit]
-#     return JsonResponse(list(clientes), safe=False)
-
-
-
-# @login_required
-# def buscar_enderecos_cliente(request, cliente_id):
-#     """API para buscar endereços de um cliente específico"""
-#     enderecos = Endereco.objects.filter(cliente_id=cliente_id).values(
-#         'id', 'rua', 'cidade', 'estado', 'cep', 'complemento'
-#     )
-#     return JsonResponse(list(enderecos), safe=False)
-
 class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, AtividadePermissionMixin, ListView):
     model = Atividade
     template_name = 'atividade/atividades_por_ambiente.html'
     context_object_name = 'atividades'
-    paginate_by = 2  # 2 atividades por página
+    paginate_by = 2
 
     def get_queryset(self):
         ambiente_id = self.kwargs.get('ambiente_id')
         
-        # Obter data base da query string ou usar hoje
         base_date_str = self.request.GET.get('base_date')
         if base_date_str:
             try:
@@ -84,21 +61,24 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         else:
             base_date = timezone.now().date()
         
-        # Obter data selecionada para filtro (do calendário)
         selected_date_str = self.request.GET.get('data')
         
         if selected_date_str:
             try:
                 selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
-                # Filtrar atividades apenas do dia selecionado
                 return Atividade.objects.filter(
                     ambiente__id=ambiente_id,
                     data_prevista=selected_date
                 ).order_by('hora_prevista', 'id')
             except ValueError:
                 pass
+        else:
+            return Atividade.objects.filter(
+                ambiente__id=ambiente_id,
+                data_prevista=base_date
+            ).order_by('hora_prevista', 'id')
         
-        # Se não houver data selecionada, mostrar atividades do período
+        # Fallback: mostrar range de datas (não deveria chegar aqui normalmente)
         trinta_dias_atras = base_date - timedelta(days=30)
         trinta_dias_frente = base_date + timedelta(days=60)
         
@@ -108,18 +88,15 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
             data_prevista__lte=trinta_dias_frente
         ).order_by('data_prevista', 'hora_prevista', 'id')
     
-    #TODO refazer isso aq
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ambiente_id = self.kwargs.get('ambiente_id')
         ambiente = get_object_or_404(Ambiente, id=ambiente_id)
         context['ambiente'] = ambiente
         
-        # Adicionar permissões do usuário ao contexto
         permissoes = self.get_user_permissions(ambiente)
         context['user_permissions'] = permissoes
         
-        # Obter data base da query string ou usar hoje
         base_date_str = self.request.GET.get('base_date')
         if base_date_str:
             try:
@@ -129,12 +106,10 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         else:
             base_date = timezone.now().date()
         
-        # Obter data selecionada
         selected_date_str = self.request.GET.get('data')
         if selected_date_str:
             context['selected_date'] = selected_date_str
         
-        # Gerar dados para agenda usando a data base
         atividades_por_dia = {}
         for i in range(-30, 31):
             data = base_date + timedelta(days=i)
@@ -147,7 +122,6 @@ class AtividadesPorAmbienteView(LoginRequiredMixin, AmbientePermissionMixin, Ati
         context['atividades_por_dia'] = json.dumps(atividades_por_dia)
         context['base_date'] = base_date.isoformat()
         
-        # Adicionar informações de paginação customizadas
         page_obj = context.get('page_obj')
         if page_obj:
             context['total_atividades'] = page_obj.paginator.count
@@ -171,10 +145,8 @@ class AtividadeDetailView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
             context['enderecos'] = atividade.cliente.enderecos.all()
         else:
             context['enderecos'] = []
-        # Passar o ambiente_id para o template poder voltar para a página correta
         if atividade.ambiente:
             context['ambiente_id'] = atividade.ambiente.id
-            # Adicionar permissões do usuário
             context['user_permissions'] = self.get_user_permissions(atividade.ambiente)
         else:
             context['ambiente_id'] = None
@@ -187,12 +159,10 @@ class AtividadeCreateView(LoginRequiredMixin, AmbientePermissionMixin, Atividade
     success_url = reverse_lazy('lista_atividades')
     
     def dispatch(self, request, *args, **kwargs):
-        # Primeiro executa o dispatch do AmbientePermissionMixin
         response = super().dispatch(request, *args, **kwargs)
         if isinstance(response, JsonResponse) or hasattr(response, 'status_code'):
             return response
         
-        # Verificar permissão de criar
         ambiente_id = request.GET.get('ambiente_id')
         if ambiente_id:
             try:

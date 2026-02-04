@@ -37,7 +37,6 @@ class Referencia(models.Model):
         return self.nome_arquivo
     
     def save(self, *args, **kwargs):
-        # Detectar tipo automaticamente baseado na extensão do arquivo
         if self.arquivo:
             extensao = os.path.splitext(self.arquivo.name)[1].lower().strip('.')
             tipo_mapa = {
